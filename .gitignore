@@ -19,3 +19,7 @@ desktop.ini
 
 # Node (only present if dev tooling is added later)
 node_modules/
+
+# Browser-automation dumps (page snapshots, console logs) from checking the
+# live site. Debug output, and the repo is public.
+.playwright-mcp/
