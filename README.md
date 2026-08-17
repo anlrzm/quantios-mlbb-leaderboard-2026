@@ -3,7 +3,7 @@
 A static leaderboard for the internal Mobile Legends tournament. No backend,
 no database, no login. `data.json` is the entire tournament.
 
-**Live board:** https://<user>.github.io/<repo>/
+**Live board:** https://anlrzm.github.io/quantios-mlbb-leaderboard-2026/
 
 ## Updating scores after a match
 
@@ -14,8 +14,10 @@ no database, no login. `data.json` is the entire tournament.
    any validation error is unresolved, so a broken file can't be copied by
    accident.
 5. Click **Copy JSON**.
-6. In GitHub, open `data.json` → pencil icon → select all → paste → **Commit
-   changes**.
+6. Open [`data.json` in the GitHub editor][edit] → select all → paste →
+   **Commit changes**.
+
+[edit]: https://github.com/anlrzm/quantios-mlbb-leaderboard-2026/edit/main/data.json
 7. The live board updates in about 20 seconds.
 
 Nothing in the admin panel saves on its own. Closing the tab without
@@ -48,7 +50,7 @@ for `fetch` to succeed.
 node --test
 ```
 
-Expect 32 passing, 0 failing. This scans the working directory for test
+Expect 34 passing, 0 failing. This scans the working directory for test
 files, so run it from the repo root. (`node --test test/` looks like it
 should work but resolves `test` as a module path and fails immediately with
 `MODULE_NOT_FOUND` on Windows — don't use it.)
