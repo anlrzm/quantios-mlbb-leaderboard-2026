@@ -1,0 +1,22 @@
+{
+  "tournament": {
+    "name": "Quantios MLBB Challenge",
+    "season": "Season 1",
+    "updated": "2026-08-17"
+  },
+  "players": [
+    { "id": "p1", "ign": "Zx_Raven" },
+    { "id": "p2", "ign": "KyroBlast" }
+  ],
+  "matches": [
+    {
+      "id": "m1",
+      "label": "Match 1",
+      "date": "2026-08-17",
+      "results": [
+        { "playerId": "p1", "points": 24 },
+        { "playerId": "p2", "points": 18 }
+      ]
+    }
+  ]
+}
