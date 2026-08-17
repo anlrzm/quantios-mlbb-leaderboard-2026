@@ -79,3 +79,142 @@ test('formatPoints handles negatives', () => {
 test('formatPoints handles zero', () => {
   assert.equal(formatPoints(0), '0');
 });
+
+import { computeStandings, findUnknownPlayerRefs, leaderSummary } from '../standings.js';
+
+function doc(players, matches) {
+  return { tournament: {}, players, matches };
+}
+const P = (id, ign) => ({ id, ign });
+const M = (id, results) => ({ id, label: id, date: '2026-08-17', results });
+const R = (playerId, points) => ({ playerId, points });
+
+test('computeStandings sums points across matches', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha')],
+    [M('m1', [R('p1', 10)]), M('m2', [R('p1', 15)])],
+  ));
+  assert.equal(s[0].total, 25);
+  assert.equal(s[0].matchesPlayed, 2);
+});
+
+test('computeStandings ranks by total descending', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo')],
+    [M('m1', [R('p1', 10), R('p2', 30)])],
+  ));
+  assert.deepEqual(s.map((x) => x.ign), ['Bravo', 'Alpha']);
+  assert.deepEqual(s.map((x) => x.rank), [1, 2]);
+});
+
+test('computeStandings gives a player in no match a total of 0, ranked last', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Ghost')],
+    [M('m1', [R('p1', 10)])],
+  ));
+  assert.equal(s[1].ign, 'Ghost');
+  assert.equal(s[1].total, 0);
+  assert.equal(s[1].matchesPlayed, 0);
+  assert.equal(s[1].rank, 2);
+});
+
+test('computeStandings shares a rank on a tie and skips the next', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo'), P('p3', 'Charlie'), P('p4', 'Delta')],
+    [M('m1', [R('p1', 50), R('p2', 40), R('p3', 40), R('p4', 10)])],
+  ));
+  assert.deepEqual(s.map((x) => x.rank), [1, 2, 2, 4]);
+});
+
+test('computeStandings skips two ranks after a three-way tie', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo'), P('p3', 'Charlie'), P('p4', 'Delta')],
+    [M('m1', [R('p1', 40), R('p2', 40), R('p3', 40), R('p4', 10)])],
+  ));
+  assert.deepEqual(s.map((x) => x.rank), [1, 1, 1, 4]);
+});
+
+test('computeStandings orders a tie alphabetically, case-insensitively', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'zulu'), P('p2', 'Alpha'), P('p3', 'mike')],
+    [M('m1', [R('p1', 10), R('p2', 10), R('p3', 10)])],
+  ));
+  assert.deepEqual(s.map((x) => x.ign), ['Alpha', 'mike', 'zulu']);
+});
+
+test('computeStandings subtracts negative points', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha')],
+    [M('m1', [R('p1', 20)]), M('m2', [R('p1', -5)])],
+  ));
+  assert.equal(s[0].total, 15);
+});
+
+test('computeStandings ignores a result referencing an unknown player', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha')],
+    [M('m1', [R('p1', 10), R('pX', 99)])],
+  ));
+  assert.equal(s.length, 1);
+  assert.equal(s[0].total, 10);
+});
+
+test('computeStandings returns an empty array for an empty roster', () => {
+  assert.deepEqual(computeStandings(doc([], [])), []);
+});
+
+test('findUnknownPlayerRefs reports orphaned references', () => {
+  const refs = findUnknownPlayerRefs(doc(
+    [P('p1', 'Alpha')],
+    [M('m1', [R('p1', 10), R('pX', 99)])],
+  ));
+  assert.deepEqual(refs, [{ matchId: 'm1', matchLabel: 'm1', playerId: 'pX' }]);
+});
+
+test('findUnknownPlayerRefs returns empty when everything resolves', () => {
+  const refs = findUnknownPlayerRefs(doc([P('p1', 'Alpha')], [M('m1', [R('p1', 10)])]));
+  assert.deepEqual(refs, []);
+});
+
+test('leaderSummary returns null when nobody has played', () => {
+  assert.equal(leaderSummary(computeStandings(doc([], []))), null);
+});
+
+test('leaderSummary reports the margin over second place', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo')],
+    [M('m1', [R('p1', 50), R('p2', 30)])],
+  ));
+  const l = leaderSummary(s);
+  assert.equal(l.ign, 'Alpha');
+  assert.equal(l.total, 50);
+  assert.equal(l.tied, false);
+  assert.equal(l.margin, 20);
+});
+
+test('leaderSummary reports a tie for first', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo')],
+    [M('m1', [R('p1', 50), R('p2', 50)])],
+  ));
+  const l = leaderSummary(s);
+  assert.equal(l.ign, 'Alpha');
+  assert.equal(l.tied, true);
+  assert.deepEqual(l.tiedWith, ['Bravo']);
+  assert.equal(l.margin, null);
+});
+
+test('leaderSummary reports a three-way tie', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo'), P('p3', 'Charlie')],
+    [M('m1', [R('p1', 50), R('p2', 50), R('p3', 50)])],
+  ));
+  const l = leaderSummary(s);
+  assert.equal(l.tied, true);
+  assert.deepEqual(l.tiedWith, ['Bravo', 'Charlie']);
+});
+
+test('leaderSummary has a null margin when there is only one player', () => {
+  const s = computeStandings(doc([P('p1', 'Alpha')], [M('m1', [R('p1', 50)])]));
+  assert.equal(leaderSummary(s).margin, null);
+});
