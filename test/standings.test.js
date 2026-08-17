@@ -46,7 +46,20 @@ test('validateShape rejects a match whose results is not an array', () => {
 test('validateShape rejects a player missing an id', () => {
   const r = validateShape({ ...valid, players: [{ ign: 'NoId' }] });
   assert.equal(r.ok, false);
-  assert.match(r.error, /id/);
+  assert.match(r.error, /"id"/);
+});
+
+test('validateShape rejects duplicate player ids', () => {
+  const r = validateShape({ ...valid, players: [{ id: 'p1', ign: 'A' }, { id: 'p1', ign: 'B' }] });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /[Dd]uplicate/);
+});
+
+test('validateShape rejects non-finite points', () => {
+  const bad = { ...valid, matches: [{ id: 'm1', label: 'M', date: '2026-08-17', results: [{ playerId: 'p1', points: 'twenty' }] }] };
+  const r = validateShape(bad);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /points/i);
 });
 
 test('validateShape tolerates a missing tournament block', () => {

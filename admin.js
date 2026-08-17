@@ -1,7 +1,8 @@
 import { findUnknownPlayerRefs } from './standings.js';
 
-// A working copy. The fetched object is never mutated, so leaving #admin and
-// coming back reloads clean state from data.json.
+// A working copy. The fetched object is never mutated — every edit lands here.
+// It is cloned once per page load and survives hash navigation, so a trip to
+// the board and back keeps unsaved edits; a full reload starts clean.
 let draft = null;
 let host = null;
 
@@ -10,6 +11,13 @@ function el(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
+}
+
+/** Today in the organiser's local timezone as YYYY-MM-DD. toISOString would give UTC. */
+function todayISO() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /** Next free id: one past the highest numeric suffix currently in the list. */
@@ -110,6 +118,9 @@ function renderRoster() {
     const error = addPlayer(field.value);
     if (!error) field.value = '';
     draw(error);
+    // draw() rebuilt the DOM, so `field` is detached: focus the fresh node to
+    // keep the type-Enter-type-Enter rhythm going for a 40-player roster.
+    host.querySelector('.ad-add .ad-input')?.focus();
   };
   add.addEventListener('click', submit);
   field.addEventListener('keydown', (e) => {
@@ -122,7 +133,7 @@ function renderRoster() {
 }
 
 function renderOutput() {
-  const section = el('section', 'ad-section');
+  const section = el('section', 'ad-section ad-output');
   section.append(el('h2', 'ad-h2', 'Updated data.json'));
   section.append(
     el('p', 'ad-hint', 'Copy this, paste it into data.json on GitHub, and commit.'),
@@ -140,7 +151,7 @@ function renderOutput() {
     section.append(warn);
   }
 
-  draft.tournament.updated = new Date().toISOString().slice(0, 10);
+  draft.tournament.updated = todayISO();
 
   const blocking = validateAll();
   if (blocking) {
@@ -236,6 +247,15 @@ function validateAll() {
     const error = validateMatch(match);
     if (error) return error;
   }
+
+  // An orphaned reference is always a mistake: the board drops those points
+  // silently, so block publishing rather than emit JSON that loses a score.
+  const orphans = findUnknownPlayerRefs(draft);
+  if (orphans.length > 0) {
+    const first = orphans[0];
+    return `"${first.matchLabel}" scores an unknown player "${first.playerId}". Pick a real player or remove that row.`;
+  }
+
   return null;
 }
 
@@ -250,9 +270,18 @@ function renderResultRow(match, result) {
     if (player.id === result.playerId) option.selected = true;
     select.append(option);
   }
+  // With no matching option the browser would show the first player, so the
+  // row would claim someone else's name. Say what the data actually holds.
+  const known = draft.players.some((p) => p.id === result.playerId);
+  if (!known) {
+    const unknown = el('option', null, `Unknown player (${result.playerId})`);
+    unknown.value = result.playerId;
+    unknown.selected = true;
+    select.prepend(unknown);
+  }
   select.addEventListener('change', () => {
     result.playerId = select.value;
-    draw();
+    refreshOutput();
   });
   row.append(select);
 
@@ -263,7 +292,7 @@ function renderResultRow(match, result) {
   points.setAttribute('aria-label', 'Points');
   points.addEventListener('change', () => {
     result.points = points.value === '' ? 0 : Number(points.value);
-    draw();
+    refreshOutput();
   });
   row.append(points);
 
@@ -289,7 +318,7 @@ function renderMatch(match) {
   label.setAttribute('aria-label', 'Match label');
   label.addEventListener('change', () => {
     match.label = label.value;
-    draw();
+    refreshOutput();
   });
   head.append(label);
 
@@ -299,7 +328,7 @@ function renderMatch(match) {
   date.setAttribute('aria-label', 'Match date');
   date.addEventListener('change', () => {
     match.date = date.value;
-    draw();
+    refreshOutput();
   });
   head.append(date);
 
@@ -349,7 +378,7 @@ function renderMatches() {
     draft.matches.push({
       id: nextId(draft.matches, 'm'),
       label: nextMatchLabel(),
-      date: new Date().toISOString().slice(0, 10),
+      date: todayISO(),
       results: [],
     });
     draw();
@@ -378,9 +407,23 @@ function draw(error) {
   host.append(renderOutput());
 }
 
+/** Swaps only the output section, so an edited field keeps focus. */
+function refreshOutput() {
+  const existing = host.querySelector('.ad-output');
+  if (!existing) {
+    draw();
+    return;
+  }
+  existing.replaceWith(renderOutput());
+}
+
 export function renderAdmin(container, data) {
   host = container;
-  draft = structuredClone(data);
-  draft.tournament = draft.tournament ?? {};
+  // Clone once per page load: toggling to the board and back must not discard
+  // unsaved edits. A full reload still starts clean from data.json.
+  if (draft === null) {
+    draft = structuredClone(data);
+    draft.tournament = draft.tournament ?? {};
+  }
   draw();
 }

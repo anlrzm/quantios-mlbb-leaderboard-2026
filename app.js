@@ -36,6 +36,15 @@ function route(data) {
   }
 }
 
+/** Rendering must never leave an empty <main>: show the error card instead. */
+function safeRoute(data) {
+  try {
+    route(data);
+  } catch (error) {
+    showError('Something went wrong rendering the page', error.message);
+  }
+}
+
 async function main() {
   let data;
   try {
@@ -51,8 +60,8 @@ async function main() {
     return;
   }
 
-  route(data);
-  window.addEventListener('hashchange', () => route(data));
+  safeRoute(data);
+  window.addEventListener('hashchange', () => safeRoute(data));
 }
 
 main();

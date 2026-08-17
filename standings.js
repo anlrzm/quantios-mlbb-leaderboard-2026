@@ -10,9 +10,18 @@ export function validateShape(data) {
   if (data === null || typeof data !== 'object' || Array.isArray(data)) {
     return { ok: false, error: 'Expected the document to be an object.' };
   }
+  if (
+    data.tournament !== undefined &&
+    (data.tournament === null ||
+      Array.isArray(data.tournament) ||
+      typeof data.tournament !== 'object')
+  ) {
+    return { ok: false, error: 'Optional "tournament" must be an object.' };
+  }
   if (!Array.isArray(data.players)) {
     return { ok: false, error: 'Missing or invalid "players" — expected an array.' };
   }
+  const seenPlayerIds = new Set();
   for (const p of data.players) {
     if (p === null || typeof p !== 'object') {
       return { ok: false, error: 'Every entry in "players" must be an object.' };
@@ -23,6 +32,11 @@ export function validateShape(data) {
     if (typeof p.ign !== 'string') {
       return { ok: false, error: `Player "${p.id}" needs a string "ign".` };
     }
+    // Two players sharing an id silently dedupe on the board — one vanishes.
+    if (seenPlayerIds.has(p.id)) {
+      return { ok: false, error: `Duplicate player id "${p.id}".` };
+    }
+    seenPlayerIds.add(p.id);
   }
   if (!Array.isArray(data.matches)) {
     return { ok: false, error: 'Missing or invalid "matches" — expected an array.' };
@@ -31,8 +45,31 @@ export function validateShape(data) {
     if (m === null || typeof m !== 'object') {
       return { ok: false, error: 'Every entry in "matches" must be an object.' };
     }
+    if (typeof m.label !== 'string') {
+      return { ok: false, error: `Match "${m.id ?? '?'}" needs a string "label".` };
+    }
+    if (typeof m.date !== 'string') {
+      return { ok: false, error: `Match "${m.id ?? '?'}" needs a string "date".` };
+    }
     if (!Array.isArray(m.results)) {
       return { ok: false, error: `Match "${m.id ?? '?'}" needs an array "results".` };
+    }
+    for (const r of m.results) {
+      if (r === null || typeof r !== 'object' || Array.isArray(r)) {
+        return { ok: false, error: `Every result in match "${m.id ?? '?'}" must be an object.` };
+      }
+      if (typeof r.playerId !== 'string' || r.playerId === '') {
+        return {
+          ok: false,
+          error: `Every result in match "${m.id ?? '?'}" needs a non-empty string "playerId".`,
+        };
+      }
+      if (typeof r.points !== 'number' || !Number.isFinite(r.points)) {
+        return {
+          ok: false,
+          error: `Every result in match "${m.id ?? '?'}" needs finite numeric "points".`,
+        };
+      }
     }
   }
   return { ok: true };
@@ -67,7 +104,7 @@ export function computeStandings(data) {
     for (const result of match.results) {
       if (!byId.has(result.playerId)) continue;
       const row = acc.get(result.playerId);
-      row.total += Number(result.points) || 0;
+      row.total += Number.isFinite(result.points) ? result.points : 0;
       row.matchesPlayed += 1;
     }
   }
