@@ -1,0 +1,12 @@
+# Superpowers brainstorming mockups — local only, never ship to Pages
+.superpowers/
+
+# OS / editor noise
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+
+# Node (only present if dev tooling is added later)
+node_modules/
