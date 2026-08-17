@@ -1,10 +1,6 @@
 import { validateShape } from './standings.js';
 import { renderBoard } from './board.js';
-
-// Replaced in Task 6.
-function renderAdmin(el, data) {
-  el.textContent = `admin: ${data.matches.length} matches`;
-}
+import { renderAdmin } from './admin.js';
 
 const container = document.getElementById('app');
 

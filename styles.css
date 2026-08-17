@@ -214,3 +214,79 @@ body {
     to { opacity: 1; transform: none; }
   }
 }
+
+/* ---------- admin ---------- */
+.ad-title { margin: 0; font-size: 22px; font-weight: 900; font-style: italic; }
+.ad-back { display: inline-block; margin-bottom: 18px; font-size: 12px; color: var(--cyan); text-decoration: none; }
+.ad-back:hover { text-decoration: underline; }
+
+.ad-section {
+  margin-bottom: 22px;
+  padding: 15px 14px 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border-radius: 10px;
+  border: 1px solid var(--hairline);
+}
+
+.ad-h2 { margin: 0 0 4px; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.ad-hint { margin: 0 0 12px; font-size: 11.5px; color: rgba(167, 139, 250, 0.75); line-height: 1.5; }
+
+.ad-list { list-style: none; margin: 10px 0; padding: 0; }
+.ad-item { display: flex; gap: 8px; margin-bottom: 7px; align-items: center; }
+
+.ad-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+
+.ad-input:focus { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+.ad-btn {
+  padding: 8px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--text);
+  background: rgba(217, 70, 239, 0.24);
+  border: 1px solid rgba(217, 70, 239, 0.5);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ad-btn:hover { background: rgba(217, 70, 239, 0.38); }
+.ad-btn-danger { background: rgba(239, 68, 68, 0.16); border-color: rgba(239, 68, 68, 0.45); }
+.ad-btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+.ad-add { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+.ad-error, .ad-warn {
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.ad-error { background: rgba(239, 68, 68, 0.14); border-left: 3px solid #ef4444; color: #fca5a5; }
+.ad-warn { background: rgba(245, 158, 11, 0.14); border-left: 3px solid #f59e0b; color: #fcd34d; }
+
+.ad-json {
+  width: 100%;
+  padding: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #d8b4fe;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  resize: vertical;
+}
