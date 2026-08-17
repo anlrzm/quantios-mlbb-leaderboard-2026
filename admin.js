@@ -21,6 +21,14 @@ function nextId(items, prefix) {
   return `${prefix}${highest + 1}`;
 }
 
+/** First "Match N" label not already taken, compared like the validator does. */
+function nextMatchLabel() {
+  const taken = new Set(draft.matches.map((m) => m.label.trim().toLowerCase()));
+  let n = 1;
+  while (taken.has(`match ${n}`)) n += 1;
+  return `Match ${n}`;
+}
+
 function matchesUsingPlayer(playerId) {
   return draft.matches.filter((m) => m.results.some((r) => r.playerId === playerId));
 }
@@ -185,6 +193,15 @@ function renderOutput() {
   return section;
 }
 
+/** True only for a real calendar date in YYYY-MM-DD form. */
+function isRealDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [y, m, d] = value.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  // A rolled-over date (Feb 30 -> Mar 2) fails to round-trip.
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() + 1 === m && dt.getUTCDate() === d;
+}
+
 /** Returns an error string, or null when the match is publishable. */
 function validateMatch(match) {
   if (match.label.trim() === '') return 'Every match needs a label.';
@@ -194,8 +211,8 @@ function validateMatch(match) {
   );
   if (duplicateLabel) return `Another match is already called "${match.label}".`;
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(match.date) || Number.isNaN(Date.parse(match.date))) {
-    return `"${match.label}" needs a date as YYYY-MM-DD.`;
+  if (!isRealDate(match.date)) {
+    return `"${match.label}" needs a real date as YYYY-MM-DD.`;
   }
 
   const seen = new Set();
@@ -331,7 +348,7 @@ function renderMatches() {
   add.addEventListener('click', () => {
     draft.matches.push({
       id: nextId(draft.matches, 'm'),
-      label: `Match ${draft.matches.length + 1}`,
+      label: nextMatchLabel(),
       date: new Date().toISOString().slice(0, 10),
       results: [],
     });
