@@ -11,6 +11,7 @@
 ## Global Constraints
 
 - **Zero runtime dependencies.** No npm packages ship to the browser. No CDN links — the page must work offline from `file://` except for the `data.json` fetch.
+- **Inter is self-hosted, never CDN-loaded.** `fonts/inter-latin.woff2` and `fonts/inter-latin-italic.woff2` are already committed. Declare them via `@font-face` in `styles.css`. Never add a `<link>` to Google Fonts.
 - **No build step.** Files are served exactly as committed. Use native ES modules (`<script type="module">`).
 - **Node 18+** for the test runner (`node --test` with `node:test` and `node:assert/strict`).
 - **`standings.js` must not touch the DOM or the network.** It is pure functions only. This is what makes it testable.
@@ -537,9 +538,29 @@ Create `index.html`:
 
 - [ ] **Step 3: Create the base stylesheet**
 
-Create `styles.css`:
+Create `styles.css`. The `@font-face` block must come first — the font files
+are already committed at `fonts/`, self-hosted rather than CDN-loaded so the
+board matches the approved mockup without a third-party dependency. Both are
+variable fonts spanning weights 400–900, so two files cover every weight the
+design uses:
 
 ```css
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('fonts/inter-latin-italic.woff2') format('woff2');
+}
+
 :root {
   --bg-1: #1a0b2e;
   --bg-2: #0f0620;
