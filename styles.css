@@ -290,3 +290,17 @@ body {
   border-radius: 6px;
   resize: vertical;
 }
+
+.ad-match {
+  padding: 12px;
+  margin-bottom: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+}
+
+.ad-match-head { display: flex; gap: 7px; margin-bottom: 10px; flex-wrap: wrap; }
+.ad-result { display: flex; gap: 7px; margin-bottom: 6px; align-items: center; }
+.ad-points { max-width: 92px; flex: 0 0 auto; }
+.ad-date { max-width: 150px; flex: 0 0 auto; }
+.ad-btn:disabled { opacity: 0.45; cursor: not-allowed; }

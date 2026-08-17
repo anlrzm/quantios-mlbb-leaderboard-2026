@@ -132,6 +132,17 @@ function renderOutput() {
     section.append(warn);
   }
 
+  draft.tournament.updated = new Date().toISOString().slice(0, 10);
+
+  const blocking = validateAll();
+  if (blocking) {
+    section.append(el('div', 'ad-error', `Fix this before publishing: ${blocking}`));
+    section.append(
+      el('p', 'ad-hint', 'The JSON is hidden until the data is valid, so a broken file cannot be committed by accident.'),
+    );
+    return section;
+  }
+
   const json = JSON.stringify(draft, null, 2);
 
   const area = el('textarea', 'ad-json');
@@ -174,9 +185,161 @@ function renderOutput() {
   return section;
 }
 
-// Replaced in Task 7.
+/** Returns an error string, or null when the match is publishable. */
+function validateMatch(match) {
+  if (match.label.trim() === '') return 'Every match needs a label.';
+
+  const duplicateLabel = draft.matches.some(
+    (m) => m !== match && m.label.trim().toLowerCase() === match.label.trim().toLowerCase(),
+  );
+  if (duplicateLabel) return `Another match is already called "${match.label}".`;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(match.date) || Number.isNaN(Date.parse(match.date))) {
+    return `"${match.label}" needs a date as YYYY-MM-DD.`;
+  }
+
+  const seen = new Set();
+  for (const result of match.results) {
+    if (seen.has(result.playerId)) {
+      const who = draft.players.find((p) => p.id === result.playerId);
+      return `${who?.ign ?? result.playerId} appears twice in "${match.label}".`;
+    }
+    seen.add(result.playerId);
+
+    if (!Number.isFinite(result.points)) {
+      return `Points in "${match.label}" must be numbers.`;
+    }
+  }
+  return null;
+}
+
+/** First error across all matches, or null. */
+function validateAll() {
+  for (const match of draft.matches) {
+    const error = validateMatch(match);
+    if (error) return error;
+  }
+  return null;
+}
+
+function renderResultRow(match, result) {
+  const row = el('div', 'ad-result');
+
+  const select = el('select', 'ad-input');
+  select.setAttribute('aria-label', 'Player');
+  for (const player of draft.players) {
+    const option = el('option', null, player.ign);
+    option.value = player.id;
+    if (player.id === result.playerId) option.selected = true;
+    select.append(option);
+  }
+  select.addEventListener('change', () => {
+    result.playerId = select.value;
+    draw();
+  });
+  row.append(select);
+
+  const points = el('input', 'ad-input ad-points');
+  points.type = 'number';
+  points.step = 'any';
+  points.value = String(result.points);
+  points.setAttribute('aria-label', 'Points');
+  points.addEventListener('change', () => {
+    result.points = points.value === '' ? 0 : Number(points.value);
+    draw();
+  });
+  row.append(points);
+
+  const remove = el('button', 'ad-btn ad-btn-danger', '×');
+  remove.type = 'button';
+  remove.setAttribute('aria-label', 'Remove this result');
+  remove.addEventListener('click', () => {
+    match.results = match.results.filter((r) => r !== result);
+    draw();
+  });
+  row.append(remove);
+
+  return row;
+}
+
+function renderMatch(match) {
+  const card = el('div', 'ad-match');
+
+  const head = el('div', 'ad-match-head');
+
+  const label = el('input', 'ad-input');
+  label.value = match.label;
+  label.setAttribute('aria-label', 'Match label');
+  label.addEventListener('change', () => {
+    match.label = label.value;
+    draw();
+  });
+  head.append(label);
+
+  const date = el('input', 'ad-input ad-date');
+  date.type = 'date';
+  date.value = match.date;
+  date.setAttribute('aria-label', 'Match date');
+  date.addEventListener('change', () => {
+    match.date = date.value;
+    draw();
+  });
+  head.append(date);
+
+  const kill = el('button', 'ad-btn ad-btn-danger', 'Delete');
+  kill.type = 'button';
+  kill.addEventListener('click', () => {
+    draft.matches = draft.matches.filter((m) => m !== match);
+    draw();
+  });
+  head.append(kill);
+
+  card.append(head);
+
+  for (const result of match.results) card.append(renderResultRow(match, result));
+
+  if (match.results.length === 0) {
+    card.append(el('p', 'ad-hint', 'No results yet — this match scores nobody.'));
+  }
+
+  const add = el('button', 'ad-btn', 'Add player result');
+  add.type = 'button';
+  add.disabled = draft.players.length === 0;
+  add.addEventListener('click', () => {
+    const used = new Set(match.results.map((r) => r.playerId));
+    const free = draft.players.find((p) => !used.has(p.id)) ?? draft.players[0];
+    match.results.push({ playerId: free.id, points: 0 });
+    draw();
+  });
+  card.append(add);
+
+  return card;
+}
+
 function renderMatches() {
-  return el('section', 'ad-section');
+  const section = el('section', 'ad-section');
+  section.append(el('h2', 'ad-h2', 'Matches'));
+
+  for (const match of draft.matches) section.append(renderMatch(match));
+
+  if (draft.matches.length === 0) {
+    section.append(el('p', 'ad-hint', 'No matches yet.'));
+  }
+
+  const add = el('button', 'ad-btn', 'Add match');
+  add.type = 'button';
+  add.addEventListener('click', () => {
+    draft.matches.push({
+      id: nextId(draft.matches, 'm'),
+      label: `Match ${draft.matches.length + 1}`,
+      date: new Date().toISOString().slice(0, 10),
+      results: [],
+    });
+    draw();
+  });
+  section.append(add);
+
+  return section;
 }
 
 function draw(error) {
