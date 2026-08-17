@@ -1052,7 +1052,7 @@ Reload. Expected: `Zx_Raven` in the spotlight reading `1 match · +6 ahead`, `12
 
 Now check the edge cases by editing `data.json`, reloading, then reverting each time:
 
-1. **Tie for first** — set `KyroBlast` to `24`. Expected: label reads `JOINT LEADER`, sub-line reads `1 match · Tied with KyroBlast`, and KyroBlast still appears below at rank 1.
+1. **Tie for first** — set `KyroBlast` to `24`. Expected: label reads `JOINT LEADER`. Note the tie-break: `computeStandings` orders ties alphabetically case-insensitively, and `KyroBlast` sorts before `Zx_Raven`, so **KyroBlast** takes the spotlight, the sub-line reads `1 match · Tied with Zx_Raven`, and **Zx_Raven** appears below at rank 1. Seeing KyroBlast promoted is correct, not a regression.
 2. **No matches** — set `"matches": []`. Expected: `No matches recorded yet.`, no spotlight, both players listed at rank 1 with 0.
 3. **Single player** — remove `p2` from `players` and from the match results. Expected: spotlight renders with no `+X ahead` and an empty list below.
 4. **360px width** — confirm the name and points do not collide.
