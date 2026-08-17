@@ -43,6 +43,26 @@ function removePlayer(playerId) {
   return null;
 }
 
+/** Renames in place. Returns an error string, or null on success. */
+function renamePlayer(player, rawIgn) {
+  const ign = rawIgn.trim();
+  if (ign === '') return 'Enter an in-game name.';
+
+  // Re-casing or re-trimming your own name is always allowed.
+  if (ign.toLowerCase() === player.ign.trim().toLowerCase()) {
+    player.ign = ign;
+    return null;
+  }
+
+  const clash = draft.players.some(
+    (p) => p !== player && p.ign.trim().toLowerCase() === ign.toLowerCase(),
+  );
+  if (clash) return `"${ign}" is already on the roster.`;
+
+  player.ign = ign;
+  return null;
+}
+
 function renderRoster() {
   const section = el('section', 'ad-section');
   section.append(el('h2', 'ad-h2', 'Roster'));
@@ -55,8 +75,8 @@ function renderRoster() {
     input.value = player.ign;
     input.setAttribute('aria-label', `Name for ${player.ign}`);
     input.addEventListener('change', () => {
-      player.ign = input.value.trim() || player.ign;
-      draw();
+      const error = renamePlayer(player, input.value);
+      draw(error);
     });
     li.append(input);
 
