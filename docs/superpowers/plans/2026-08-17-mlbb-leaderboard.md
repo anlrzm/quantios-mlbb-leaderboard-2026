@@ -14,6 +14,7 @@
 - **Inter is self-hosted, never CDN-loaded.** `fonts/inter-latin.woff2` and `fonts/inter-latin-italic.woff2` are already committed. Declare them via `@font-face` in `styles.css`. Never add a `<link>` to Google Fonts.
 - **No build step.** Files are served exactly as committed. Use native ES modules (`<script type="module">`).
 - **Node 18+** for the test runner (`node --test` with `node:test` and `node:assert/strict`).
+- **A root `package.json` containing only `{"type": "module"}`** declares these `.js` files as ES modules. Without it, Node auto-detects ESM in `.js` only from v22.7+, silently breaking the Node 18 floor above. It declares no dependencies, adds no build step, and the browser never fetches it. Do not add dependencies, scripts, or any other field to it.
 - **`standings.js` must not touch the DOM or the network.** It is pure functions only. This is what makes it testable.
 - **All `data.json` fetches must bust cache:** `fetch('data.json?t=' + Date.now(), { cache: 'no-store' })`. GitHub Pages otherwise serves stale standings for minutes.
 - **Colour tokens, exact values:** background gradient `#1a0b2e` → `#0f0620` → `#16092b`; magenta `#d946ef`; cyan `#22d3ee`; violet `#a78bfa`; primary text `#f5f3ff`; muted text `#a78bfa`.
