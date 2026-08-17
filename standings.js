@@ -38,12 +38,17 @@ export function validateShape(data) {
   return { ok: true };
 }
 
+/** Rounds to the precision the board displays: at most one decimal. */
+function roundToDisplay(n) {
+  return Math.round(n * 10) / 10;
+}
+
 /**
  * Renders a point value for display: at most one decimal, no trailing ".0",
  * and no floating-point artefacts (0.1 + 0.2 renders as "0.3").
  */
 export function formatPoints(n) {
-  const rounded = Math.round(n * 10) / 10;
+  const rounded = roundToDisplay(n);
   return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }
 
@@ -65,6 +70,10 @@ export function computeStandings(data) {
       row.total += Number(result.points) || 0;
       row.matchesPlayed += 1;
     }
+  }
+
+  for (const row of acc.values()) {
+    row.total = roundToDisplay(row.total);
   }
 
   const rows = [...acc.values()].sort(

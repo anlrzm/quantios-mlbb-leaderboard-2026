@@ -218,3 +218,21 @@ test('leaderSummary has a null margin when there is only one player', () => {
   const s = computeStandings(doc([P('p1', 'Alpha')], [M('m1', [R('p1', 50)])]));
   assert.equal(leaderSummary(s).margin, null);
 });
+
+test('computeStandings ties players whose totals differ only by float drift', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha'), P('p2', 'Bravo')],
+    [M('m1', [R('p1', 0.1), R('p2', 0.3)]), M('m2', [R('p1', 0.2)])],
+  ));
+  // Alpha accrues 0.1 + 0.2 = 0.30000000000000004; Bravo has exactly 0.3.
+  // Both display as "0.3", so both must rank 1.
+  assert.deepEqual(s.map((x) => x.rank), [1, 1]);
+});
+
+test('computeStandings stores totals at display precision', () => {
+  const s = computeStandings(doc(
+    [P('p1', 'Alpha')],
+    [M('m1', [R('p1', 0.1)]), M('m2', [R('p1', 0.2)])],
+  ));
+  assert.equal(s[0].total, 0.3);
+});
