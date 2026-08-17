@@ -14,6 +14,7 @@
 - **Inter is self-hosted, never CDN-loaded.** `fonts/inter-latin.woff2` and `fonts/inter-latin-italic.woff2` are already committed. Declare them via `@font-face` in `styles.css`. Never add a `<link>` to Google Fonts.
 - **No build step.** Files are served exactly as committed. Use native ES modules (`<script type="module">`).
 - **Node 18+** for the test runner (`node --test` with `node:test` and `node:assert/strict`).
+- **The canonical test command is bare `node --test`**, which scans the working directory. Do NOT write `node --test test/` — on Windows Node resolves `test` as a module and dies with `MODULE_NOT_FOUND` before running anything. `node --test "test/*.test.js"` also works if a narrower target is ever needed.
 - **A root `package.json` containing only `{"type": "module"}`** declares these `.js` files as ES modules. Without it, Node auto-detects ESM in `.js` only from v22.7+, silently breaking the Node 18 floor above. It declares no dependencies, adds no build step, and the browser never fetches it. Do not add dependencies, scripts, or any other field to it.
 - **`standings.js` must not touch the DOM or the network.** It is pure functions only. This is what makes it testable.
 - **All `data.json` fetches must bust cache:** `fetch('data.json?t=' + Date.now(), { cache: 'no-store' })`. GitHub Pages otherwise serves stale standings for minutes.
@@ -145,7 +146,7 @@ test('formatPoints handles zero', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `node --test test/`
+Run: `node --test`
 Expected: FAIL — cannot resolve `../standings.js`.
 
 - [ ] **Step 3: Write the implementation**
@@ -205,7 +206,7 @@ export function formatPoints(n) {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `node --test test/`
+Run: `node --test`
 Expected: PASS — 14 tests.
 
 - [ ] **Step 5: Commit**
@@ -377,7 +378,7 @@ test('leaderSummary has a null margin when there is only one player', () => {
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `node --test test/`
+Run: `node --test`
 Expected: FAIL — `computeStandings` is not exported.
 
 - [ ] **Step 3: Write the implementation**
@@ -463,7 +464,7 @@ export function leaderSummary(standings) {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `node --test test/`
+Run: `node --test`
 Expected: PASS — 30 tests total.
 
 - [ ] **Step 5: Commit**
@@ -1640,7 +1641,7 @@ git commit -m "feat: add match entry with validation gating the JSON output"
 
 - [ ] **Step 1: Run the full test suite**
 
-Run: `node --test test/`
+Run: `node --test`
 Expected: PASS, 30 tests, zero failures. Do not proceed past a failure.
 
 - [ ] **Step 2: Write the README**
@@ -1688,7 +1689,7 @@ blocks the `data.json` fetch.
 ## Tests
 
 ```bash
-node --test test/
+node --test
 ```
 
 Covers `standings.js`, which holds all the ranking logic. Rendering is
