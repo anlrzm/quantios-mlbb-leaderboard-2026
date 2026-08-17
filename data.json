@@ -1,22 +1,495 @@
 {
-  "tournament": {
-    "name": "Quantios MLBB Challenge",
-    "season": "Season 1",
-    "updated": "2026-08-17"
-  },
-  "players": [
-    { "id": "p1", "ign": "Zx_Raven" },
-    { "id": "p2", "ign": "KyroBlast" }
-  ],
-  "matches": [
-    {
-      "id": "m1",
-      "label": "Match 1",
-      "date": "2026-08-17",
-      "results": [
-        { "playerId": "p1", "points": 24 },
-        { "playerId": "p2", "points": 18 }
-      ]
-    }
-  ]
+    "tournament": {
+        "name": "Quantios MLBB Challenge",
+        "season": "Season 1",
+        "updated": "2026-08-17"
+    },
+    "players": [
+        {
+            "id": "p1",
+            "ign": "Vesper"
+        },
+        {
+            "id": "p2",
+            "ign": "Yewyew"
+        },
+        {
+            "id": "p3",
+            "ign": "CaesarClown"
+        },
+        {
+            "id": "p4",
+            "ign": "slimkm"
+        },
+        {
+            "id": "p5",
+            "ign": "shana12333"
+        },
+        {
+            "id": "p6",
+            "ign": "OopsMyBad"
+        },
+        {
+            "id": "p7",
+            "ign": "mthurovin"
+        },
+        {
+            "id": "p8",
+            "ign": "Lollilolipop"
+        },
+        {
+            "id": "p9",
+            "ign": "Hanya bisa Kalea"
+        },
+        {
+            "id": "p10",
+            "ign": "Keynex"
+        },
+        {
+            "id": "p11",
+            "ign": "syqnn"
+        },
+        {
+            "id": "p12",
+            "ign": "Hanzo_EX"
+        },
+        {
+            "id": "p13",
+            "ign": "Moomoooo"
+        },
+        {
+            "id": "p14",
+            "ign": "EEREENEEEEE"
+        },
+        {
+            "id": "p15",
+            "ign": "ahkuen"
+        },
+        {
+            "id": "p16",
+            "ign": "neverif"
+        },
+        {
+            "id": "p17",
+            "ign": "DexSky99"
+        },
+        {
+            "id": "p18",
+            "ign": "Levotier"
+        },
+        {
+            "id": "p19",
+            "ign": "Rocky"
+        },
+        {
+            "id": "p20",
+            "ign": "Sy@KL"
+        },
+        {
+            "id": "p21",
+            "ign": "Bridget.Novia@65"
+        },
+        {
+            "id": "p22",
+            "ign": "Kabuyyyyyy"
+        },
+        {
+            "id": "p23",
+            "ign": "Muz012"
+        },
+        {
+            "id": "p24",
+            "ign": "gg.com"
+        },
+        {
+            "id": "p25",
+            "ign": "BabuSon"
+        },
+        {
+            "id": "p26",
+            "ign": "The Hangry Bacon"
+        },
+        {
+            "id": "p27",
+            "ign": "Arthur.Olah@39"
+        }
+    ],
+    "matches": [
+        {
+            "id": "m1",
+            "label": "A vs B",
+            "date": "2026-08-17",
+            "results": [
+                {
+                    "playerId": "p22",
+                    "points": 9.3
+                },
+                {
+                    "playerId": "p24",
+                    "points": 10.5
+                },
+                {
+                    "playerId": "p26",
+                    "points": 12.6
+                },
+                {
+                    "playerId": "p23",
+                    "points": 6.2
+                },
+                {
+                    "playerId": "p25",
+                    "points": 10.9
+                },
+                {
+                    "playerId": "p20",
+                    "points": 6.0
+                },
+                {
+                    "playerId": "p18",
+                    "points": 7.5
+                },
+                {
+                    "playerId": "p19",
+                    "points": 11.9
+                },
+                {
+                    "playerId": "p21",
+                    "points": 7.9
+                },
+                {
+                    "playerId": "p17",
+                    "points": 4.6
+                }
+            ]
+        },
+        {
+            "id": "m2",
+            "label": "A vs D",
+            "date": "2026-08-12",
+            "results": [
+                {
+                    "playerId": "p22",
+                    "points": 11.9
+                },
+                {
+                    "playerId": "p23",
+                    "points": 9.8
+                },
+                {
+                    "playerId": "p24",
+                    "points": 12.5
+                },
+                {
+                    "playerId": "p25",
+                    "points": 14.0
+                },
+                {
+                    "playerId": "p26",
+                    "points": 9.8
+                },
+                {
+                    "playerId": "p8",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p10",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p7",
+                    "points": 6.3
+                },
+                {
+                    "playerId": "p5",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p9",
+                    "points": 3.6
+                }
+            ]
+        },
+        {
+            "id": "m3",
+            "label": "A vs E",
+            "date": "2026-08-11",
+            "results": [
+                {
+                    "playerId": "p22",
+                    "points": 9.4
+                },
+                {
+                    "playerId": "p24",
+                    "points": 10.6
+                },
+                {
+                    "playerId": "p23",
+                    "points": 6.0
+                },
+                {
+                    "playerId": "p25",
+                    "points": 10.8
+                },
+                {
+                    "playerId": "p26",
+                    "points": 11.3
+                },
+                {
+                    "playerId": "p13",
+                    "points": 7.1
+                },
+                {
+                    "playerId": "p14",
+                    "points": 3.3
+                },
+                {
+                    "playerId": "p15",
+                    "points": 5.1
+                },
+                {
+                    "playerId": "p12",
+                    "points": 5.4
+                },
+                {
+                    "playerId": "p11",
+                    "points": 3.4
+                }
+            ]
+        },
+        {
+            "id": "m4",
+            "label": "B vs C",
+            "date": "2026-08-14",
+            "results": [
+                {
+                    "playerId": "p1",
+                    "points": 6.7
+                },
+                {
+                    "playerId": "p4",
+                    "points": 5.3
+                },
+                {
+                    "playerId": "p16",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p2",
+                    "points": 9.7
+                },
+                {
+                    "playerId": "p5",
+                    "points": 6.6
+                },
+                {
+                    "playerId": "p17",
+                    "points": 7.7
+                },
+                {
+                    "playerId": "p18",
+                    "points": 5.3
+                },
+                {
+                    "playerId": "p19",
+                    "points": 9.2
+                },
+                {
+                    "playerId": "p20",
+                    "points": 6.5
+                },
+                {
+                    "playerId": "p21",
+                    "points": 8.6
+                }
+            ]
+        },
+        {
+            "id": "m5",
+            "label": "B vs E",
+            "date": "2026-08-11",
+            "results": [
+                {
+                    "playerId": "p13",
+                    "points": 6.2
+                },
+                {
+                    "playerId": "p14",
+                    "points": 10.4
+                },
+                {
+                    "playerId": "p27",
+                    "points": 8.3
+                },
+                {
+                    "playerId": "p12",
+                    "points": 6.0
+                },
+                {
+                    "playerId": "p15",
+                    "points": 10.1
+                },
+                {
+                    "playerId": "p20",
+                    "points": 7.4
+                },
+                {
+                    "playerId": "p18",
+                    "points": 6.2
+                },
+                {
+                    "playerId": "p19",
+                    "points": 12.9
+                },
+                {
+                    "playerId": "p21",
+                    "points": 9.0
+                },
+                {
+                    "playerId": "p17",
+                    "points": 5.5
+                }
+            ]
+        },
+        {
+            "id": "m6",
+            "label": "C vs D",
+            "date": "2026-08-17",
+            "results": [
+                {
+                    "playerId": "p1",
+                    "points": 8.5
+                },
+                {
+                    "playerId": "p2",
+                    "points": 9.4
+                },
+                {
+                    "playerId": "p3",
+                    "points": 10.1
+                },
+                {
+                    "playerId": "p4",
+                    "points": 8.8
+                },
+                {
+                    "playerId": "p5",
+                    "points": 10.7
+                },
+                {
+                    "playerId": "p6",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p7",
+                    "points": 5.9
+                },
+                {
+                    "playerId": "p8",
+                    "points": 5.6
+                },
+                {
+                    "playerId": "p9",
+                    "points": 5.8
+                },
+                {
+                    "playerId": "p10",
+                    "points": 3.0
+                }
+            ]
+        },
+        {
+            "id": "m7",
+            "label": "C vs E",
+            "date": "2026-08-17",
+            "results": [
+                {
+                    "playerId": "p1",
+                    "points": 6.2
+                },
+                {
+                    "playerId": "p2",
+                    "points": 7.0
+                },
+                {
+                    "playerId": "p3",
+                    "points": 6.6
+                },
+                {
+                    "playerId": "p4",
+                    "points": 8.7
+                },
+                {
+                    "playerId": "p5",
+                    "points": 7.6
+                },
+                {
+                    "playerId": "p11",
+                    "points": 14.2
+                },
+                {
+                    "playerId": "p12",
+                    "points": 7.6
+                },
+                {
+                    "playerId": "p13",
+                    "points": 13.2
+                },
+                {
+                    "playerId": "p14",
+                    "points": 11.7
+                },
+                {
+                    "playerId": "p15",
+                    "points": 11.3
+                }
+            ]
+        },
+        {
+            "id": "m8",
+            "label": "D vs E",
+            "date": "2026-08-14",
+            "results": [
+                {
+                    "playerId": "p13",
+                    "points": 13.8
+                },
+                {
+                    "playerId": "p12",
+                    "points": 8.1
+                },
+                {
+                    "playerId": "p27",
+                    "points": 10.8
+                },
+                {
+                    "playerId": "p14",
+                    "points": 7.6
+                },
+                {
+                    "playerId": "p15",
+                    "points": 11.2
+                },
+                {
+                    "playerId": "p7",
+                    "points": 6.0
+                },
+                {
+                    "playerId": "p6",
+                    "points": 4.0
+                },
+                {
+                    "playerId": "p9",
+                    "points": 4.7
+                },
+                {
+                    "playerId": "p8",
+                    "points": 3.0
+                },
+                {
+                    "playerId": "p10",
+                    "points": 3.8
+                }
+            ]
+        }
+    ]
 }
