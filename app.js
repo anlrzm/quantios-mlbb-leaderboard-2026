@@ -1,9 +1,6 @@
 import { validateShape } from './standings.js';
+import { renderBoard } from './board.js';
 
-// Replaced in Task 4.
-function renderBoard(el, data) {
-  el.textContent = `board: ${data.players.length} players`;
-}
 // Replaced in Task 6.
 function renderAdmin(el, data) {
   el.textContent = `admin: ${data.matches.length} matches`;

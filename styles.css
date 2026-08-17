@@ -61,3 +61,81 @@ body {
 
 .error-card h2 { margin: 0 0 8px; font-size: 15px; color: #fecaca; }
 .error-card p { margin: 0; font-size: 13px; line-height: 1.6; color: #fca5a5; }
+
+/* ---------- header ---------- */
+.lb-header { margin-bottom: 20px; }
+
+.lb-title {
+  margin: 0;
+  font-size: clamp(22px, 7vw, 30px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  background: linear-gradient(90deg, var(--cyan), var(--magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lb-meta {
+  margin: 6px 0 0;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.lb-updated { margin: 3px 0 0; font-size: 11px; color: rgba(167, 139, 250, 0.65); }
+
+/* ---------- standings list ---------- */
+.lb-list { list-style: none; margin: 0; padding: 0; }
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 13px;
+  margin-bottom: 7px;
+  background: var(--surface);
+  border-left: 2px solid var(--hairline);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 8px 100%);
+}
+
+.lb-row.r2 {
+  background: linear-gradient(90deg, rgba(34, 211, 238, 0.16), transparent);
+  border-left-color: var(--cyan);
+}
+
+.lb-row.r3 {
+  background: linear-gradient(90deg, rgba(167, 139, 250, 0.14), transparent);
+  border-left-color: var(--violet);
+}
+
+.lb-rank {
+  font-size: 16px;
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.lb-name-wrap { min-width: 0; }
+
+.lb-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.lb-sub { display: block; font-size: 10.5px; color: rgba(167, 139, 250, 0.75); margin-top: 1px; }
+
+.lb-pts {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
