@@ -1,4 +1,4 @@
-import { computeStandings, formatPoints } from './standings.js';
+import { computeStandings, formatPoints, leaderSummary } from './standings.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -45,6 +45,37 @@ function renderRow(row) {
   return li;
 }
 
+function renderSpotlight(leader) {
+  const box = el('section', 'champ');
+
+  const avatar = el('div', 'champ-av', [...leader.ign][0]?.toUpperCase() ?? '?');
+  box.append(avatar);
+
+  const middle = el('div', 'champ-mid');
+  middle.append(el('div', 'champ-label', leader.tied ? 'Joint Leader' : 'Current Leader'));
+  middle.append(el('div', 'champ-name', leader.ign));
+
+  const played = `${leader.matchesPlayed} ${leader.matchesPlayed === 1 ? 'match' : 'matches'}`;
+  let detail = played;
+  if (leader.tied) {
+    detail +=
+      leader.tiedWith.length === 1
+        ? ` · Tied with ${leader.tiedWith[0]}`
+        : ` · Tied with ${leader.tiedWith.length} players`;
+  } else if (leader.margin !== null) {
+    detail += ` · +${formatPoints(leader.margin)} ahead`;
+  }
+  middle.append(el('div', 'champ-sub', detail));
+  box.append(middle);
+
+  const points = el('div', 'champ-pts');
+  points.append(el('div', 'champ-pts-val', formatPoints(leader.total)));
+  points.append(el('div', 'champ-pts-label', 'PTS'));
+  box.append(points);
+
+  return box;
+}
+
 export function renderBoard(container, data) {
   container.append(renderHeader(data));
 
@@ -56,9 +87,21 @@ export function renderBoard(container, data) {
   }
   if (data.matches.length === 0) {
     container.append(el('p', 'state-msg', 'No matches recorded yet.'));
+    const list = el('ol', 'lb-list');
+    for (const row of standings) list.append(renderRow(row));
+    container.append(list);
+    return;
   }
 
-  const list = el('ol', 'lb-list');
-  for (const row of standings) list.append(renderRow(row));
-  container.append(list);
+  const leader = leaderSummary(standings);
+  container.append(renderSpotlight(leader));
+
+  // The spotlight replaces the leader's row. Co-leaders on a tie still appear
+  // in the list at rank 1.
+  const rest = standings.slice(1);
+  if (rest.length > 0) {
+    const list = el('ol', 'lb-list');
+    for (const row of rest) list.append(renderRow(row));
+    container.append(list);
+  }
 }
