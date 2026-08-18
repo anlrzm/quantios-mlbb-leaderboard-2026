@@ -41,12 +41,17 @@ function matchesUsingPlayer(playerId) {
   return draft.matches.filter((m) => m.results.some((r) => r.playerId === playerId));
 }
 
-function addPlayer(rawIgn) {
+function addPlayer(rawIgn, rawTeam) {
   const ign = rawIgn.trim();
   if (ign === '') return 'Enter an in-game name.';
   const clash = draft.players.some((p) => p.ign.trim().toLowerCase() === ign.toLowerCase());
   if (clash) return `"${ign}" is already on the roster.`;
-  draft.players.push({ id: nextId(draft.players, 'p'), ign });
+  const player = { id: nextId(draft.players, 'p'), ign };
+  // An empty team is left off entirely rather than stored as "": the board
+  // treats a missing team as "unknown" and hides the label.
+  const team = rawTeam.trim();
+  if (team !== '') player.team = team;
+  draft.players.push(player);
   return null;
 }
 
@@ -96,6 +101,18 @@ function renderRoster() {
     });
     li.append(input);
 
+    const team = el('input', 'ad-input ad-team');
+    team.value = player.team ?? '';
+    team.placeholder = 'Team';
+    team.setAttribute('aria-label', `Team for ${player.ign}`);
+    team.addEventListener('change', () => {
+      const value = team.value.trim();
+      if (value === '') delete player.team;
+      else player.team = value;
+      refreshOutput();
+    });
+    li.append(team);
+
     const remove = el('button', 'ad-btn ad-btn-danger', 'Remove');
     remove.type = 'button';
     remove.addEventListener('click', () => {
@@ -112,10 +129,13 @@ function renderRoster() {
   const field = el('input', 'ad-input');
   field.placeholder = 'New player IGN';
   field.setAttribute('aria-label', 'New player IGN');
+  const teamField = el('input', 'ad-input ad-team');
+  teamField.placeholder = 'Team';
+  teamField.setAttribute('aria-label', 'Team for the new player');
   const add = el('button', 'ad-btn', 'Add player');
   add.type = 'button';
   const submit = () => {
-    const error = addPlayer(field.value);
+    const error = addPlayer(field.value, teamField.value);
     if (!error) field.value = '';
     draw(error);
     // draw() rebuilt the DOM, so `field` is detached: focus the fresh node to
@@ -126,7 +146,10 @@ function renderRoster() {
   field.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') submit();
   });
-  row.append(field, add);
+  teamField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') submit();
+  });
+  row.append(field, teamField, add);
   section.append(row);
 
   return section;

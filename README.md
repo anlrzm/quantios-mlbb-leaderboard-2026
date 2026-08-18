@@ -23,6 +23,23 @@ no database, no login. `data.json` is the entire tournament.
 Nothing in the admin panel saves on its own. Closing the tab without
 committing loses the edits.
 
+## Adding post-match screenshots
+
+1. Drop the image in `screenshots/`, named `<TeamA>v<TeamB>_<D>-<M>.<ext>` —
+   e.g. `AvB_17-8.jpg`. The year comes from `tournament.updated` in
+   `data.json`.
+2. Run `node tools/build-screenshots.mjs`. A static site cannot list a
+   directory, so the gallery reads the `screenshots.json` manifest this
+   writes. A file whose name does not parse is reported and left out.
+3. Commit both the image and `screenshots.json`.
+
+These images are published with the site — anyone with the URL can see
+them.
+
+The burger menu does not list score entry — only the leaderboard and the
+screenshots. `#admin` still works when typed on the URL; it is unadvertised
+rather than protected, for the reason below.
+
 ## Why there is no password
 
 The admin panel only generates text — a block of JSON you copy out by hand.
@@ -50,13 +67,14 @@ for `fetch` to succeed.
 node --test
 ```
 
-Expect 34 passing, 0 failing. This scans the working directory for test
+Expect 49 passing, 0 failing. This scans the working directory for test
 files, so run it from the repo root. (`node --test test/` looks like it
 should work but resolves `test` as a module path and fails immediately with
 `MODULE_NOT_FOUND` on Windows — don't use it.)
 
-The suite covers `standings.js` only: totals, ranking, tie-breaking, and
-input validation — the pure logic with no DOM. `admin.js` and `board.js`
+The suite covers the pure logic with no DOM: `standings.js` (totals,
+ranking, tie-breaking, prize places, validation) and the grouping and
+date-formatting half of `gallery.js`. `admin.js`, `board.js` and `nav.js`
 have no automated tests; their behavior is verified by eye against the
 running app.
 
@@ -67,7 +85,19 @@ running app.
 | `standings.js` | Totals, ranking, validation, number formatting. Pure — no DOM. |
 | `board.js` | The public leaderboard. |
 | `admin.js` | The score-entry panel. |
+| `teams.js` | The Team Standings page. The table is derived, never hand-kept. |
+| `gallery.js` | The Post-Match Screenshots page. Grouping and date formatting are pure. |
+| `nav.js` | The burger menu shared by every page. Phase sections live in `SECTIONS`. |
 | `app.js` | Loads `data.json`, routes on the URL hash, renders errors. |
-| `data.json` | The tournament. |
+| `data.json` | The tournament: roster (with teams), matches, results. |
+| `screenshots.json` | Generated manifest of `screenshots/`. Do not hand-edit. |
+| `tools/build-screenshots.mjs` | Regenerates `screenshots.json`. |
 
-Replace `<user>` and `<repo>` with the real values once Pages is enabled.
+Team standings come from the `teams` and `winner` fields on each match, so
+recording a result keeps the table in step with the board. A match without
+those fields still scores players but counts for nobody in the table. Win =
+2 points via `WIN_POINTS`, top 4 qualify via `QUALIFY_PLACES`, both in
+`standings.js`.
+
+The top five places are prize places: the board sets them apart and draws a
+line beneath them. Change `PRIZE_PLACES` in `standings.js` to move it.

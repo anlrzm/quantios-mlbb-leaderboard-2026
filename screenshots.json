@@ -1,0 +1,54 @@
+{
+  "screenshots": [
+    {
+      "file": "screenshots/AvC_18-8.png",
+      "label": "Team A vs Team C",
+      "date": "2026-08-18"
+    },
+    {
+      "file": "screenshots/BvD_18-8.png",
+      "label": "Team B vs Team D",
+      "date": "2026-08-18"
+    },
+    {
+      "file": "screenshots/AvB_17-8.jpg",
+      "label": "Team A vs Team B",
+      "date": "2026-08-17"
+    },
+    {
+      "file": "screenshots/CvD_17-8.png",
+      "label": "Team C vs Team D",
+      "date": "2026-08-17"
+    },
+    {
+      "file": "screenshots/CvE_17-8.png",
+      "label": "Team C vs Team E",
+      "date": "2026-08-17"
+    },
+    {
+      "file": "screenshots/BvC_14-8.png",
+      "label": "Team B vs Team C",
+      "date": "2026-08-14"
+    },
+    {
+      "file": "screenshots/DvE_14-8.png",
+      "label": "Team D vs Team E",
+      "date": "2026-08-14"
+    },
+    {
+      "file": "screenshots/AvD_12-8.png",
+      "label": "Team A vs Team D",
+      "date": "2026-08-12"
+    },
+    {
+      "file": "screenshots/AvE_11-8.png",
+      "label": "Team A vs Team E",
+      "date": "2026-08-11"
+    },
+    {
+      "file": "screenshots/BvE_11-8.png",
+      "label": "Team B vs Team E",
+      "date": "2026-08-11"
+    }
+  ]
+}

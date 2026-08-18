@@ -1,4 +1,10 @@
-import { computeStandings, formatPoints, leaderSummary } from './standings.js';
+import {
+  PRIZE_PLACES,
+  computeStandings,
+  formatPoints,
+  isPrizeRank,
+  leaderSummary,
+} from './standings.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -23,11 +29,14 @@ function renderHeader(data) {
   return header;
 }
 
-// Ranks 2 and 3 get their own accent; everything below is neutral.
+// The top PRIZE_PLACES are in the money and are styled apart from the rest;
+// ranks 2 and 3 keep their own accent within that zone.
 function rowClassFor(rank) {
-  if (rank === 2) return 'lb-row r2';
-  if (rank === 3) return 'lb-row r3';
-  return 'lb-row';
+  const classes = ['lb-row'];
+  if (isPrizeRank(rank)) classes.push('prize');
+  if (rank === 2) classes.push('r2');
+  else if (rank === 3) classes.push('r3');
+  return classes.join(' ');
 }
 
 function renderRow(row) {
@@ -36,12 +45,23 @@ function renderRow(row) {
 
   const name = el('span', 'lb-name-wrap');
   name.append(el('span', 'lb-name', row.ign));
-  name.append(
-    el('span', 'lb-sub', `${row.matchesPlayed} ${row.matchesPlayed === 1 ? 'match' : 'matches'}`),
-  );
+
+  const played = `${row.matchesPlayed} ${row.matchesPlayed === 1 ? 'match' : 'matches'}`;
+  name.append(el('span', 'lb-sub', row.team ? `${row.team} · ${played}` : played));
   li.append(name);
 
-  li.append(el('span', 'lb-pts', formatPoints(row.total)));
+  const points = el('span', 'lb-pts-wrap');
+  points.append(el('span', 'lb-pts', formatPoints(row.total)));
+  if (isPrizeRank(row.rank)) points.append(el('span', 'lb-prize-tag', 'Prize'));
+  li.append(points);
+
+  return li;
+}
+
+/** Marks where the prize places stop and the rest of the field begins. */
+function renderCutLine() {
+  const li = el('li', 'lb-cut');
+  li.append(el('span', 'lb-cut-text', `Prize line · top ${PRIZE_PLACES}`));
   return li;
 }
 
@@ -56,7 +76,7 @@ function renderSpotlight(leader) {
   middle.append(el('div', 'champ-name', leader.ign));
 
   const played = `${leader.matchesPlayed} ${leader.matchesPlayed === 1 ? 'match' : 'matches'}`;
-  let detail = played;
+  let detail = leader.team ? `${leader.team} · ${played}` : played;
   if (leader.tied) {
     detail +=
       leader.tiedWith.length === 1
@@ -101,7 +121,15 @@ export function renderBoard(container, data) {
   const rest = standings.slice(1);
   if (rest.length > 0) {
     const list = el('ol', 'lb-list');
-    for (const row of rest) list.append(renderRow(row));
+    let cutDrawn = false;
+    for (const row of rest) {
+      // One divider, at the first row that misses out on a prize.
+      if (!cutDrawn && !isPrizeRank(row.rank)) {
+        list.append(renderCutLine());
+        cutDrawn = true;
+      }
+      list.append(renderRow(row));
+    }
     container.append(list);
   }
 }

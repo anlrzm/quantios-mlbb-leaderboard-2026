@@ -32,6 +32,10 @@ export function validateShape(data) {
     if (typeof p.ign !== 'string') {
       return { ok: false, error: `Player "${p.id}" needs a string "ign".` };
     }
+    // "team" is optional: a roster from before teams existed still renders.
+    if (p.team !== undefined && typeof p.team !== 'string') {
+      return { ok: false, error: `Player "${p.id}" has a non-string "team".` };
+    }
     // Two players sharing an id silently dedupe on the board — one vanishes.
     if (seenPlayerIds.has(p.id)) {
       return { ok: false, error: `Duplicate player id "${p.id}".` };
@@ -50,6 +54,30 @@ export function validateShape(data) {
     }
     if (typeof m.date !== 'string') {
       return { ok: false, error: `Match "${m.id ?? '?'}" needs a string "date".` };
+    }
+    // "teams"/"winner" are optional: a match recorded before team results
+    // existed simply does not count toward the team table.
+    if (m.teams !== undefined) {
+      if (!Array.isArray(m.teams) || m.teams.length !== 2) {
+        return { ok: false, error: `Match "${m.id ?? '?'}" needs exactly two "teams".` };
+      }
+      if (m.teams.some((t) => typeof t !== 'string' || t === '')) {
+        return { ok: false, error: `Match "${m.id ?? '?'}" has a blank team name.` };
+      }
+      if (m.teams[0] === m.teams[1]) {
+        return { ok: false, error: `Match "${m.id ?? '?'}" lists the same team twice.` };
+      }
+    }
+    if (m.winner !== undefined) {
+      if (!Array.isArray(m.teams)) {
+        return { ok: false, error: `Match "${m.id ?? '?'}" has a "winner" but no "teams".` };
+      }
+      if (!m.teams.includes(m.winner)) {
+        return {
+          ok: false,
+          error: `Match "${m.id ?? '?'}" has a "winner" that is not one of its teams.`,
+        };
+      }
     }
     if (!Array.isArray(m.results)) {
       return { ok: false, error: `Match "${m.id ?? '?'}" needs an array "results".` };
@@ -97,7 +125,10 @@ export function formatPoints(n) {
 export function computeStandings(data) {
   const byId = new Map(data.players.map((p) => [p.id, p]));
   const acc = new Map(
-    data.players.map((p) => [p.id, { playerId: p.id, ign: p.ign, total: 0, matchesPlayed: 0 }]),
+    data.players.map((p) => [
+      p.id,
+      { playerId: p.id, ign: p.ign, team: p.team ?? null, total: 0, matchesPlayed: 0 },
+    ]),
   );
 
   for (const match of data.matches) {
@@ -160,10 +191,93 @@ export function leaderSummary(standings) {
 
   return {
     ign: leader.ign,
+    team: leader.team ?? null,
     total: leader.total,
     matchesPlayed: leader.matchesPlayed,
     tied: tiedWith.length > 0,
     tiedWith: tiedWith.map((r) => r.ign),
     margin: tiedWith.length > 0 || !runnerUp ? null : leader.total - runnerUp.total,
   };
+}
+
+/**
+ * How many places take home a prize. The board sets these rows apart from the
+ * rest of the table.
+ */
+export const PRIZE_PLACES = 5;
+
+/**
+ * True when a row is in the money. Ranks are competition ranks, so a tie can
+ * put more than PRIZE_PLACES players in the zone — that is the intended
+ * reading of a shared placing, not a bug.
+ */
+export function isPrizeRank(rank) {
+  return rank >= 1 && rank <= PRIZE_PLACES;
+}
+
+/** Places that go through to the playoffs. The team table sets them apart. */
+export const QUALIFY_PLACES = 4;
+
+/** Points a team banks for a win. A loss is worth nothing. */
+export const WIN_POINTS = 2;
+
+/** True when a team placing qualifies for the playoffs. */
+export function isQualifyingRank(rank) {
+  return rank >= 1 && rank <= QUALIFY_PLACES;
+}
+
+/**
+ * Builds the team table: played, won, lost, points, ranked.
+ *
+ * Teams come from the roster, so a team that has not played yet still appears
+ * on 0. Only matches carrying both "teams" and "winner" are counted — a match
+ * with scores but no recorded result is not a silent loss for anybody.
+ */
+export function computeTeamTable(data) {
+  const acc = new Map();
+  const ensure = (name) => {
+    if (!acc.has(name)) {
+      acc.set(name, { team: name, played: 0, won: 0, lost: 0, points: 0 });
+    }
+    return acc.get(name);
+  };
+
+  for (const player of data.players) {
+    if (typeof player.team === 'string' && player.team !== '') ensure(player.team);
+  }
+
+  for (const match of data.matches) {
+    if (!Array.isArray(match.teams) || typeof match.winner !== 'string') continue;
+    if (!match.teams.includes(match.winner)) continue;
+    for (const name of match.teams) {
+      const row = ensure(name);
+      row.played += 1;
+      if (name === match.winner) {
+        row.won += 1;
+        row.points += WIN_POINTS;
+      } else {
+        row.lost += 1;
+      }
+    }
+  }
+
+  const rows = [...acc.values()].sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.won - a.won ||
+      a.team.toLowerCase().localeCompare(b.team.toLowerCase()),
+  );
+
+  // Standard competition ranking, same as the player board.
+  let rank = 0;
+  let previousPoints = null;
+  rows.forEach((row, index) => {
+    if (row.points !== previousPoints) {
+      rank = index + 1;
+      previousPoints = row.points;
+    }
+    row.rank = rank;
+  });
+
+  return rows;
 }

@@ -1,14 +1,15 @@
 # Superpowers brainstorming mockups — local only, never ship to Pages
 .superpowers/
 
-# Match result screenshots — the private evidence behind the scores.
-# The board never references these; keep them off the public Pages site.
-screenshots/
-
 # Superseded placeholder roster from early development, kept only as a
 # local reference. Publishing it would sit next to the real data.json
 # looking like a current backup.
 data_backup.json
+
+# Design reference dropped into screenshots/ — the standings mockup the team
+# page was built from, not a match screenshot. build-screenshots.mjs skips it
+# (the name does not parse) and it should not ship with the real ones.
+screenshots/image.png
 
 # OS / editor noise
 Thumbs.db

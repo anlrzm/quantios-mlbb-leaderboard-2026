@@ -1,11 +1,19 @@
 import { validateShape } from './standings.js';
 import { renderBoard } from './board.js';
 import { renderAdmin } from './admin.js';
+import { renderGallery, validateScreenshots } from './gallery.js';
+import { renderNav } from './nav.js';
+import { renderTeams } from './teams.js';
 
 const container = document.getElementById('app');
 
+// screenshots.json is only fetched when the gallery is first opened, and the
+// result is kept so flipping between pages does not refetch it.
+let screenshotDoc = null;
+let screenshotError = null;
+
 function showError(title, detail) {
-  container.replaceChildren();
+  container.replaceChildren(renderNav(location.hash));
   const card = document.createElement('div');
   card.className = 'error-card';
   const h = document.createElement('h2');
@@ -14,6 +22,14 @@ function showError(title, detail) {
   p.textContent = detail;
   card.append(h, p);
   container.append(card);
+}
+
+async function loadScreenshots() {
+  const response = await fetch(`screenshots.json?t=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`Server returned ${response.status} ${response.statusText}`);
+  }
+  return response.json();
 }
 
 async function loadData() {
@@ -27,10 +43,28 @@ async function loadData() {
 }
 
 function route(data) {
-  const isAdmin = location.hash === '#admin';
-  container.replaceChildren();
-  if (isAdmin) {
-    renderAdmin(container, data);
+  const hash = location.hash;
+  container.replaceChildren(renderNav(hash));
+
+  if (hash === '#admin') {
+    // The admin panel redraws itself on every keystroke, so it gets its own
+    // subtree to clear — otherwise it would wipe the nav out from under us.
+    const host = document.createElement('div');
+    container.append(host);
+    renderAdmin(host, data);
+  } else if (hash === '#teams') {
+    renderTeams(container, data);
+  } else if (hash === '#screenshots') {
+    if (screenshotError) {
+      showError('Could not load the screenshots', screenshotError);
+    } else if (screenshotDoc === null) {
+      const loading = document.createElement('p');
+      loading.className = 'state-msg';
+      loading.textContent = 'Loading screenshots…';
+      container.append(loading);
+    } else {
+      renderGallery(container, screenshotDoc);
+    }
   } else {
     renderBoard(container, data);
   }
@@ -43,6 +77,28 @@ function safeRoute(data) {
   } catch (error) {
     showError('Something went wrong rendering the page', error.message);
   }
+}
+
+/**
+ * Opening the gallery needs a second file. Fetch it, then re-route so the page
+ * paints with real content instead of an empty shell.
+ */
+async function ensureScreenshots(data) {
+  if (location.hash !== '#screenshots' || screenshotDoc !== null || screenshotError !== null) {
+    return;
+  }
+  try {
+    const doc = await loadScreenshots();
+    const check = validateScreenshots(doc);
+    if (!check.ok) {
+      screenshotError = `screenshots.json is malformed. ${check.error}`;
+    } else {
+      screenshotDoc = doc;
+    }
+  } catch (error) {
+    screenshotError = `screenshots.json could not be fetched. ${error.message}`;
+  }
+  if (location.hash === '#screenshots') safeRoute(data);
 }
 
 async function main() {
@@ -61,7 +117,11 @@ async function main() {
   }
 
   safeRoute(data);
-  window.addEventListener('hashchange', () => safeRoute(data));
+  ensureScreenshots(data);
+  window.addEventListener('hashchange', () => {
+    safeRoute(data);
+    ensureScreenshots(data);
+  });
 }
 
 main();

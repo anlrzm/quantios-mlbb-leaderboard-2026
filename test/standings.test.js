@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateShape, formatPoints } from '../standings.js';
+import {
+  validateShape,
+  formatPoints,
+  PRIZE_PLACES,
+  isPrizeRank,
+  QUALIFY_PLACES,
+  isQualifyingRank,
+  computeTeamTable,
+} from '../standings.js';
 
 const valid = {
   tournament: { name: 'T', season: 'S1', updated: '2026-08-17' },
@@ -248,4 +256,124 @@ test('computeStandings stores totals at display precision', () => {
     [M('m1', [R('p1', 0.1)]), M('m2', [R('p1', 0.2)])],
   ));
   assert.equal(s[0].total, 0.3);
+});
+
+test('validateShape accepts a player with a team', () => {
+  const doc = { ...valid, players: [{ id: 'p1', ign: 'Alpha', team: 'Team A' }] };
+  assert.deepEqual(validateShape(doc), { ok: true });
+});
+
+test('validateShape rejects a non-string team', () => {
+  const doc = { ...valid, players: [{ id: 'p1', ign: 'Alpha', team: 3 }] };
+  const r = validateShape(doc);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /team/);
+});
+
+test('computeStandings carries the team onto each row', () => {
+  const rows = computeStandings({
+    players: [{ id: 'p1', ign: 'Alpha', team: 'Team A' }, { id: 'p2', ign: 'Beta' }],
+    matches: [],
+  });
+  assert.equal(rows.find((r) => r.playerId === 'p1').team, 'Team A');
+  assert.equal(rows.find((r) => r.playerId === 'p2').team, null);
+});
+
+test('leaderSummary reports the leader team', () => {
+  const rows = computeStandings({
+    players: [{ id: 'p1', ign: 'Alpha', team: 'Team A' }],
+    matches: [{ id: 'm1', label: 'M', date: '2026-08-17', results: [{ playerId: 'p1', points: 5 }] }],
+  });
+  assert.equal(leaderSummary(rows).team, 'Team A');
+});
+
+test('isPrizeRank covers exactly the top five places', () => {
+  assert.equal(PRIZE_PLACES, 5);
+  assert.deepEqual([1, 2, 3, 4, 5].map(isPrizeRank), [true, true, true, true, true]);
+  assert.equal(isPrizeRank(6), false);
+  assert.equal(isPrizeRank(0), false);
+});
+
+const teamDoc = {
+  players: [
+    { id: 'p1', ign: 'A1', team: 'Team A' },
+    { id: 'p2', ign: 'B1', team: 'Team B' },
+    { id: 'p3', ign: 'C1', team: 'Team C' },
+  ],
+  matches: [
+    { id: 'm1', label: 'A vs B', date: '2026-08-17', teams: ['Team A', 'Team B'], winner: 'Team A', results: [] },
+    { id: 'm2', label: 'A vs C', date: '2026-08-18', teams: ['Team A', 'Team C'], winner: 'Team A', results: [] },
+    { id: 'm3', label: 'B vs C', date: '2026-08-18', teams: ['Team B', 'Team C'], winner: 'Team B', results: [] },
+  ],
+};
+
+test('computeTeamTable counts played, won, lost and points', () => {
+  const rows = computeTeamTable(teamDoc);
+  assert.deepEqual(
+    rows.map((r) => [r.team, r.played, r.won, r.lost, r.points, r.rank]),
+    [
+      ['Team A', 2, 2, 0, 4, 1],
+      ['Team B', 2, 1, 1, 2, 2],
+      ['Team C', 2, 0, 2, 0, 3],
+    ],
+  );
+});
+
+test('computeTeamTable lists a team that has not played yet', () => {
+  const rows = computeTeamTable({
+    players: [...teamDoc.players, { id: 'p4', ign: 'D1', team: 'Team D' }],
+    matches: teamDoc.matches,
+  });
+  const d = rows.find((r) => r.team === 'Team D');
+  assert.deepEqual([d.played, d.won, d.lost, d.points], [0, 0, 0, 0]);
+});
+
+test('computeTeamTable skips a match with no recorded winner', () => {
+  const rows = computeTeamTable({
+    players: teamDoc.players,
+    matches: [{ id: 'm1', label: 'A vs B', date: '2026-08-17', teams: ['Team A', 'Team B'], results: [] }],
+  });
+  assert.equal(rows.every((r) => r.played === 0), true);
+});
+
+test('computeTeamTable ties teams on equal points and ranks them together', () => {
+  const rows = computeTeamTable({
+    players: [
+      { id: 'p1', ign: 'A1', team: 'Team A' },
+      { id: 'p2', ign: 'B1', team: 'Team B' },
+    ],
+    matches: [
+      { id: 'm1', label: 'A vs B', date: '2026-08-17', teams: ['Team A', 'Team B'], winner: 'Team A', results: [] },
+      { id: 'm2', label: 'A vs B 2', date: '2026-08-18', teams: ['Team A', 'Team B'], winner: 'Team B', results: [] },
+    ],
+  });
+  assert.deepEqual(rows.map((r) => r.rank), [1, 1]);
+});
+
+test('validateShape accepts a match with teams and a winner', () => {
+  const doc = { ...valid, matches: [{ ...valid.matches[0], teams: ['Team A', 'Team B'], winner: 'Team A' }] };
+  assert.deepEqual(validateShape(doc), { ok: true });
+});
+
+test('validateShape rejects a winner that did not play the match', () => {
+  const doc = { ...valid, matches: [{ ...valid.matches[0], teams: ['Team A', 'Team B'], winner: 'Team C' }] };
+  const r = validateShape(doc);
+  assert.equal(r.ok, false);
+  assert.match(r.error, /winner/);
+});
+
+test('validateShape rejects a match listing one team', () => {
+  const doc = { ...valid, matches: [{ ...valid.matches[0], teams: ['Team A'] }] };
+  assert.equal(validateShape(doc).ok, false);
+});
+
+test('validateShape rejects a winner with no teams', () => {
+  const doc = { ...valid, matches: [{ ...valid.matches[0], winner: 'Team A' }] };
+  assert.equal(validateShape(doc).ok, false);
+});
+
+test('isQualifyingRank covers exactly the top four places', () => {
+  assert.equal(QUALIFY_PLACES, 4);
+  assert.deepEqual([1, 2, 3, 4].map(isQualifyingRank), [true, true, true, true]);
+  assert.equal(isQualifyingRank(5), false);
 });
