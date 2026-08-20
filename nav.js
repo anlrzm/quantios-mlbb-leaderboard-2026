@@ -18,7 +18,14 @@ const SECTIONS = [
       { hash: '#screenshots', label: 'Post-Match Screenshots' },
     ],
   },
-  { title: 'Phase 2', pages: [] },
+  {
+    title: 'Phase 2',
+    pages: [
+      { hash: '#playoffs', label: 'Play-off Match' },
+      { hash: '#screenshots2', label: 'Post-Match Screenshots' },
+      { hash: '#videos', label: 'Match Livestream Videos' },
+    ],
+  },
   { title: 'Phase 3', pages: [] },
 ];
 

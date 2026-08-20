@@ -2,6 +2,7 @@ import {
   PRIZE_PLACES,
   computeStandings,
   formatPoints,
+  formatTeamLabel,
   isPrizeRank,
   leaderSummary,
 } from './standings.js';
@@ -47,7 +48,8 @@ function renderRow(row) {
   name.append(el('span', 'lb-name', row.ign));
 
   const played = `${row.matchesPlayed} ${row.matchesPlayed === 1 ? 'match' : 'matches'}`;
-  name.append(el('span', 'lb-sub', row.team ? `${row.team} · ${played}` : played));
+  const team = formatTeamLabel(row.teamId, row.team);
+  name.append(el('span', 'lb-sub', team ? `${team} · ${played}` : played));
   li.append(name);
 
   const points = el('span', 'lb-pts-wrap');
@@ -76,7 +78,8 @@ function renderSpotlight(leader) {
   middle.append(el('div', 'champ-name', leader.ign));
 
   const played = `${leader.matchesPlayed} ${leader.matchesPlayed === 1 ? 'match' : 'matches'}`;
-  let detail = leader.team ? `${leader.team} · ${played}` : played;
+  const team = formatTeamLabel(leader.teamId, leader.team);
+  let detail = team ? `${team} · ${played}` : played;
   if (leader.tied) {
     detail +=
       leader.tiedWith.length === 1

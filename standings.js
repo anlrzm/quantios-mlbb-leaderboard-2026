@@ -18,6 +18,35 @@ export function validateShape(data) {
   ) {
     return { ok: false, error: 'Optional "tournament" must be an object.' };
   }
+  // "teams" is optional: a roster from before the teams section existed still
+  // renders, with the raw team value standing in for the name.
+  const teamIds = new Set();
+  if (data.teams !== undefined) {
+    if (!Array.isArray(data.teams)) {
+      return { ok: false, error: 'Optional "teams" must be an array.' };
+    }
+    for (const t of data.teams) {
+      if (t === null || typeof t !== 'object' || Array.isArray(t)) {
+        return { ok: false, error: 'Every entry in "teams" must be an object.' };
+      }
+      if (typeof t.id !== 'string' || t.id === '') {
+        return { ok: false, error: 'Every team needs a non-empty string "id".' };
+      }
+      if (typeof t.name !== 'string' || t.name === '') {
+        return { ok: false, error: `Team "${t.id}" needs a non-empty string "name".` };
+      }
+      if (teamIds.has(t.id)) {
+        return { ok: false, error: `Duplicate team id "${t.id}".` };
+      }
+      teamIds.add(t.id);
+    }
+  }
+
+  // Once teams are declared, every reference has to resolve. A typo would
+  // otherwise invent a team that shows up on the table with nobody in it.
+  const knowsTeams = teamIds.size > 0;
+  const unknownTeam = (id) => knowsTeams && !teamIds.has(id);
+
   if (!Array.isArray(data.players)) {
     return { ok: false, error: 'Missing or invalid "players" — expected an array.' };
   }
@@ -35,6 +64,14 @@ export function validateShape(data) {
     // "team" is optional: a roster from before teams existed still renders.
     if (p.team !== undefined && typeof p.team !== 'string') {
       return { ok: false, error: `Player "${p.id}" has a non-string "team".` };
+    }
+    if (p.team !== undefined && unknownTeam(p.team)) {
+      return { ok: false, error: `Player "${p.id}" is on team "${p.team}", which is not defined.` };
+    }
+    // "name" is the player's real name, shown on the play-off rosters. It is
+    // optional: the board and the team table never ask for it.
+    if (p.name !== undefined && typeof p.name !== 'string') {
+      return { ok: false, error: `Player "${p.id}" has a non-string "name".` };
     }
     // Two players sharing an id silently dedupe on the board — one vanishes.
     if (seenPlayerIds.has(p.id)) {
@@ -66,6 +103,14 @@ export function validateShape(data) {
       }
       if (m.teams[0] === m.teams[1]) {
         return { ok: false, error: `Match "${m.id ?? '?'}" lists the same team twice.` };
+      }
+      for (const t of m.teams) {
+        if (unknownTeam(t)) {
+          return {
+            ok: false,
+            error: `Match "${m.id ?? '?'}" is played by team "${t}", which is not defined.`,
+          };
+        }
       }
     }
     if (m.winner !== undefined) {
@@ -123,11 +168,20 @@ export function formatPoints(n) {
  * findUnknownPlayerRefs surfaces them in the admin panel instead.
  */
 export function computeStandings(data) {
+  const known = teamsById(data);
   const byId = new Map(data.players.map((p) => [p.id, p]));
   const acc = new Map(
     data.players.map((p) => [
       p.id,
-      { playerId: p.id, ign: p.ign, team: p.team ?? null, total: 0, matchesPlayed: 0 },
+      {
+        playerId: p.id,
+        ign: p.ign,
+        teamId: p.team ?? null,
+        // The board shows the name; an undeclared team falls back to its id.
+        team: p.team === undefined ? null : (known.get(p.team)?.name ?? p.team),
+        total: 0,
+        matchesPlayed: 0,
+      },
     ]),
   );
 
@@ -191,6 +245,7 @@ export function leaderSummary(standings) {
 
   return {
     ign: leader.ign,
+    teamId: leader.teamId ?? null,
     team: leader.team ?? null,
     total: leader.total,
     matchesPlayed: leader.matchesPlayed,
@@ -227,20 +282,59 @@ export function isQualifyingRank(rank) {
 }
 
 /**
- * Builds the team table: played, won, lost, points, ranked.
+ * Indexes the teams section by id, so a team reference anywhere else in the
+ * document can be resolved to a display name.
+ */
+export function teamsById(data) {
+  return new Map((data.teams ?? []).map((team) => [team.id, team]));
+}
+
+/**
+ * The name to show for a team id. Falls back to the id itself, which keeps an
+ * undeclared team readable rather than blank.
+ */
+export function teamLabel(data, id) {
+  return teamsById(data).get(id)?.name ?? id;
+}
+
+/**
+ * "B" + "GG Bro" -> "Team B - GG Bro", the form the leaderboard labels a
+ * player's team with. A team with no name of its own is just "Team B", so an
+ * undeclared team does not read as "Team B - B".
+ */
+export function formatTeamLabel(teamId, name) {
+  if (!teamId) return null;
+  return !name || name === teamId ? `Team ${teamId}` : `Team ${teamId} - ${name}`;
+}
+
+/**
+ * Builds the team table: played, won, lost, points, ranked. Rows carry both
+ * the id (for the badge, and for matching screenshot filenames) and the
+ * display name.
  *
- * Teams come from the roster, so a team that has not played yet still appears
- * on 0. Only matches carrying both "teams" and "winner" are counted — a match
- * with scores but no recorded result is not a silent loss for anybody.
+ * Every declared team appears, as does any team named on the roster, so a
+ * team that has not played yet still shows on 0. Only matches carrying both
+ * "teams" and "winner" are counted — a match with scores but no recorded
+ * result is not a silent loss for anybody.
  */
 export function computeTeamTable(data) {
+  const known = teamsById(data);
   const acc = new Map();
-  const ensure = (name) => {
-    if (!acc.has(name)) {
-      acc.set(name, { team: name, played: 0, won: 0, lost: 0, points: 0 });
+  const ensure = (id) => {
+    if (!acc.has(id)) {
+      acc.set(id, {
+        teamId: id,
+        team: known.get(id)?.name ?? id,
+        played: 0,
+        won: 0,
+        lost: 0,
+        points: 0,
+      });
     }
-    return acc.get(name);
+    return acc.get(id);
   };
+
+  for (const team of known.keys()) ensure(team);
 
   for (const player of data.players) {
     if (typeof player.team === 'string' && player.team !== '') ensure(player.team);

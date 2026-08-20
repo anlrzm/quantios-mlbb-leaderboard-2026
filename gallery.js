@@ -2,6 +2,7 @@
  * The Post-Match Screenshot page. Reads screenshots.json (regenerate it with
  * `node tools/build-screenshots.mjs`) and lays the images out day by day.
  */
+import { matchSides, renderMatchup } from './matchup.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -30,6 +31,16 @@ export function validateScreenshots(doc) {
     }
     if (shot.label !== undefined && typeof shot.label !== 'string') {
       return { ok: false, error: `Screenshot "${shot.file}" has a non-string "label".` };
+    }
+    // "teams" is what the caption is built from; "label" is the override for
+    // anything that is not a straight two-team match.
+    if (shot.teams !== undefined) {
+      if (!Array.isArray(shot.teams) || shot.teams.length !== 2) {
+        return { ok: false, error: `Screenshot "${shot.file}" needs exactly two "teams".` };
+      }
+      if (shot.teams.some((t) => typeof t !== 'string' || t === '')) {
+        return { ok: false, error: `Screenshot "${shot.file}" has a blank team id.` };
+      }
     }
   }
   return { ok: true };
@@ -68,12 +79,19 @@ export function formatDay(date) {
   });
 }
 
-function renderShot(shot) {
+/** "A vs C" — the plain-text form, for alt text and the label fallback. */
+function plainMatchup(sides) {
+  return sides.map((side) => `${side.id} - ${side.name}`).join(' vs ');
+}
+
+function renderShot(shot, names) {
   const figure = el('figure', 'shot');
+  const sides = matchSides(shot.teams, names);
+  const described = sides ? plainMatchup(sides) : shot.label;
 
   const image = el('img', 'shot-img');
   image.src = shot.file;
-  image.alt = shot.label ? `Post-match screenshot — ${shot.label}` : 'Post-match screenshot';
+  image.alt = described ? `Post-match screenshot — ${described}` : 'Post-match screenshot';
   image.loading = 'lazy';
   image.decoding = 'async';
 
@@ -86,11 +104,17 @@ function renderShot(shot) {
   link.append(image);
   figure.append(link);
 
-  if (shot.label) figure.append(el('figcaption', 'shot-cap', shot.label));
+  if (sides) {
+    const caption = el('figcaption', 'shot-cap');
+    caption.append(renderMatchup(sides));
+    figure.append(caption);
+  } else if (shot.label) {
+    figure.append(el('figcaption', 'shot-cap', shot.label));
+  }
   return figure;
 }
 
-function renderDay(day) {
+function renderDay(day, names) {
   const section = el('section', 'day');
 
   const head = el('div', 'day-head');
@@ -101,13 +125,18 @@ function renderDay(day) {
   section.append(head);
 
   const grid = el('div', 'shot-grid');
-  for (const shot of day.items) grid.append(renderShot(shot));
+  for (const shot of day.items) grid.append(renderShot(shot, names));
   section.append(grid);
 
   return section;
 }
 
-export function renderGallery(container, doc) {
+/**
+ * Draws a gallery. Every phase uses this same page; `subtitle` is the only
+ * thing that distinguishes one from another.
+ */
+export function renderGallery(container, doc, options = {}) {
+  const names = options.teams ?? new Map();
   const header = el('header', 'lb-header');
   header.append(el('h1', 'lb-title', 'Post-Match Screenshots'));
 
@@ -122,6 +151,7 @@ export function renderGallery(container, doc) {
       }`,
     ),
   );
+  if (options.subtitle) header.append(el('p', 'lb-updated', options.subtitle));
   container.append(header);
 
   if (days.length === 0) {
@@ -129,5 +159,5 @@ export function renderGallery(container, doc) {
     return;
   }
 
-  for (const day of days) container.append(renderDay(day));
+  for (const day of days) container.append(renderDay(day, names));
 }

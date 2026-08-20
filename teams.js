@@ -28,7 +28,8 @@ function renderRow(row) {
   // The badge/name pair is flexed inside a span: a flexed <td> stops behaving
   // like a table cell and the columns stop lining up.
   const teamWrap = el('span', 'tt-team-wrap');
-  teamWrap.append(el('span', 'tt-badge', row.team.replace(/^Team\s+/i, '')));
+  // The badge is the team id — the same letter the screenshot filenames use.
+  teamWrap.append(el('span', 'tt-badge', row.teamId));
   teamWrap.append(el('span', 'tt-team-name', row.team));
   team.append(teamWrap);
   tr.append(team);

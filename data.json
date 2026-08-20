@@ -4,141 +4,190 @@
         "season": "Phase 1",
         "updated": "2026-08-18"
     },
+    "teams": [
+        {
+            "id": "A",
+            "name": "Confirm Win"
+        },
+        {
+            "id": "B",
+            "name": "GG Bro"
+        },
+        {
+            "id": "C",
+            "name": "养MVP队"
+        },
+        {
+            "id": "D",
+            "name": "M&M"
+        },
+        {
+            "id": "E",
+            "name": "LDR"
+        }
+    ],
     "players": [
         {
             "id": "p1",
             "ign": "Vesper",
-            "team": "Team C"
+            "name": "Yanru Liu",
+            "team": "C"
         },
         {
             "id": "p2",
             "ign": "Yewyew",
-            "team": "Team C"
+            "name": "TY Tan",
+            "team": "C"
         },
         {
             "id": "p3",
             "ign": "CaesarClown",
-            "team": "Team C"
+            "name": "Rajsanjani Arif Syah",
+            "team": "C"
         },
         {
             "id": "p4",
             "ign": "slimkm",
-            "team": "Team C"
+            "name": "Steven Lim",
+            "team": "C"
         },
         {
             "id": "p5",
             "ign": "shana12333",
-            "team": "Team C"
+            "name": "Clara Tan",
+            "team": "C"
         },
         {
             "id": "p6",
             "ign": "OopsMyBad",
-            "team": "Team D"
+            "name": "Danni Wang",
+            "team": "D"
         },
         {
             "id": "p7",
             "ign": "mthurovin",
-            "team": "Team D"
+            "name": "Michael Thurovin",
+            "team": "D"
         },
         {
             "id": "p8",
             "ign": "Lollilolipop",
-            "team": "Team D"
+            "name": "Sim Pei Fang",
+            "team": "D"
         },
         {
             "id": "p9",
             "ign": "Hanya bisa Kalea",
-            "team": "Team D"
+            "name": "Muhaimin",
+            "team": "D"
         },
         {
             "id": "p10",
             "ign": "Keynex",
-            "team": "Team D"
+            "name": "Skyler Ang",
+            "team": "D"
         },
         {
             "id": "p11",
             "ign": "syqnn",
-            "team": "Team E"
+            "name": "Nur Asyiqin",
+            "team": "E"
         },
         {
             "id": "p12",
             "ign": "Hanzo_EX",
-            "team": "Team E"
+            "name": "Tun Danial Adli",
+            "team": "E"
         },
         {
             "id": "p13",
             "ign": "Moomoooo",
-            "team": "Team E"
+            "name": "Alice Loh",
+            "team": "E"
         },
         {
             "id": "p14",
             "ign": "EEREENEEEEE",
-            "team": "Team E"
+            "name": "Jun Wei Chan",
+            "team": "E"
         },
         {
             "id": "p15",
             "ign": "ahkuen",
-            "team": "Team E"
+            "name": "Alvin Chunn",
+            "team": "E"
         },
         {
             "id": "p16",
             "ign": "neverif",
-            "team": "Team C"
+            "name": "Daniel Zhang",
+            "team": "C"
         },
         {
             "id": "p17",
             "ign": "DexSky99",
-            "team": "Team B"
+            "name": "Joo Kang Chai",
+            "team": "B"
         },
         {
             "id": "p18",
             "ign": "Levotier",
-            "team": "Team B"
+            "name": "Pua Khe Fong",
+            "team": "B"
         },
         {
             "id": "p19",
             "ign": "Rocky",
-            "team": "Team B"
+            "name": "Faizal Hamid",
+            "team": "B"
         },
         {
             "id": "p20",
             "ign": "Sy@KL",
-            "team": "Team B"
+            "name": "Sean Cheah",
+            "team": "B"
         },
         {
             "id": "p21",
             "ign": "Bridget.Novia@65",
-            "team": "Team B"
+            "name": "Lee Chun Yuen",
+            "team": "B"
         },
         {
             "id": "p22",
             "ign": "Kabuyyyyyy",
-            "team": "Team A"
+            "name": "Ainol Rozaimi",
+            "team": "A"
         },
         {
             "id": "p23",
             "ign": "Muz012",
-            "team": "Team A"
+            "name": "Sam Morreale",
+            "team": "A"
         },
         {
             "id": "p24",
             "ign": "gg.com",
-            "team": "Team A"
+            "name": "Jacky Bong",
+            "team": "A"
         },
         {
             "id": "p25",
             "ign": "BabuSon",
-            "team": "Team A"
+            "name": "Hong Seng Yew",
+            "team": "A"
         },
         {
             "id": "p26",
             "ign": "The Hangry Bacon",
-            "team": "Team A"
+            "name": "Hong Ming Su",
+            "team": "A"
         },
         {
             "id": "p27",
             "ign": "Arthur.Olah@39",
-            "team": "Team E"
+            "name": "Kenneth Wee",
+            "team": "E"
         }
     ],
     "matches": [
@@ -147,10 +196,10 @@
             "label": "A vs B",
             "date": "2026-08-17",
             "teams": [
-                "Team A",
-                "Team B"
+                "A",
+                "B"
             ],
-            "winner": "Team A",
+            "winner": "A",
             "results": [
                 {
                     "playerId": "p22",
@@ -199,10 +248,10 @@
             "label": "A vs D",
             "date": "2026-08-12",
             "teams": [
-                "Team A",
-                "Team D"
+                "A",
+                "D"
             ],
-            "winner": "Team A",
+            "winner": "A",
             "results": [
                 {
                     "playerId": "p22",
@@ -251,10 +300,10 @@
             "label": "A vs E",
             "date": "2026-08-11",
             "teams": [
-                "Team A",
-                "Team E"
+                "A",
+                "E"
             ],
-            "winner": "Team A",
+            "winner": "A",
             "results": [
                 {
                     "playerId": "p22",
@@ -303,10 +352,10 @@
             "label": "B vs C",
             "date": "2026-08-14",
             "teams": [
-                "Team B",
-                "Team C"
+                "B",
+                "C"
             ],
-            "winner": "Team B",
+            "winner": "B",
             "results": [
                 {
                     "playerId": "p1",
@@ -355,10 +404,10 @@
             "label": "B vs E",
             "date": "2026-08-11",
             "teams": [
-                "Team B",
-                "Team E"
+                "B",
+                "E"
             ],
-            "winner": "Team B",
+            "winner": "B",
             "results": [
                 {
                     "playerId": "p13",
@@ -407,10 +456,10 @@
             "label": "C vs D",
             "date": "2026-08-17",
             "teams": [
-                "Team C",
-                "Team D"
+                "C",
+                "D"
             ],
-            "winner": "Team C",
+            "winner": "C",
             "results": [
                 {
                     "playerId": "p1",
@@ -459,10 +508,10 @@
             "label": "C vs E",
             "date": "2026-08-17",
             "teams": [
-                "Team C",
-                "Team E"
+                "C",
+                "E"
             ],
-            "winner": "Team E",
+            "winner": "E",
             "results": [
                 {
                     "playerId": "p1",
@@ -511,10 +560,10 @@
             "label": "D vs E",
             "date": "2026-08-14",
             "teams": [
-                "Team D",
-                "Team E"
+                "D",
+                "E"
             ],
-            "winner": "Team E",
+            "winner": "E",
             "results": [
                 {
                     "playerId": "p13",
@@ -563,10 +612,10 @@
             "label": "A vs C",
             "date": "2026-08-18",
             "teams": [
-                "Team A",
-                "Team C"
+                "A",
+                "C"
             ],
-            "winner": "Team A",
+            "winner": "A",
             "results": [
                 {
                     "playerId": "p25",
@@ -615,10 +664,10 @@
             "label": "B vs D",
             "date": "2026-08-18",
             "teams": [
-                "Team B",
-                "Team D"
+                "B",
+                "D"
             ],
-            "winner": "Team B",
+            "winner": "B",
             "results": [
                 {
                     "playerId": "p17",
@@ -662,5 +711,19 @@
                 }
             ]
         }
-    ]
+    ],
+    "playoffs": {
+        "upper": {
+            "teams": [
+                "A",
+                "B"
+            ]
+        },
+        "lower": {
+            "teams": [
+                "C",
+                "E"
+            ]
+        }
+    }
 }

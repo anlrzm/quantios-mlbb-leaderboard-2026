@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  formatTeamLabel,
+  teamsById,
   validateShape,
   formatPoints,
   PRIZE_PLACES,
@@ -376,4 +378,140 @@ test('isQualifyingRank covers exactly the top four places', () => {
   assert.equal(QUALIFY_PLACES, 4);
   assert.deepEqual([1, 2, 3, 4].map(isQualifyingRank), [true, true, true, true]);
   assert.equal(isQualifyingRank(5), false);
+});
+
+test('validateShape accepts a player carrying a real name', () => {
+  assert.deepEqual(
+    validateShape({ ...valid, players: [{ id: 'p1', ign: 'Alpha', name: 'Mr. X' }] }),
+    { ok: true },
+  );
+});
+
+test('validateShape rejects a non-string player name', () => {
+  const r = validateShape({ ...valid, players: [{ id: 'p1', ign: 'Alpha', name: 42 }] });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /name/);
+});
+
+/* ---------- the teams section ---------- */
+
+const withTeams = {
+  tournament: { name: 'T', season: 'S1', updated: '2026-08-17' },
+  teams: [
+    { id: 'A', name: 'Confirm Win' },
+    { id: 'B', name: 'GG Bro' },
+    { id: 'C', name: '养MVP队' },
+  ],
+  players: [
+    { id: 'p1', ign: 'Alpha', team: 'A' },
+    { id: 'p2', ign: 'Beta', team: 'B' },
+  ],
+  matches: [
+    { id: 'm1', label: 'A vs B', date: '2026-08-17', teams: ['A', 'B'], winner: 'A', results: [] },
+  ],
+};
+
+test('validateShape accepts a teams section', () => {
+  assert.deepEqual(validateShape(withTeams), { ok: true });
+});
+
+test('validateShape rejects a team without an id', () => {
+  const r = validateShape({ ...withTeams, teams: [{ name: 'Confirm Win' }] });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /id/);
+});
+
+test('validateShape rejects a team without a name', () => {
+  const r = validateShape({ ...withTeams, teams: [{ id: 'A' }] });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /name/);
+});
+
+test('validateShape rejects duplicate team ids', () => {
+  const r = validateShape({
+    ...withTeams,
+    teams: [{ id: 'A', name: 'One' }, { id: 'A', name: 'Two' }],
+  });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /Duplicate/i);
+});
+
+test('validateShape rejects a player on a team that is not defined', () => {
+  const r = validateShape({
+    ...withTeams,
+    players: [{ id: 'p1', ign: 'Alpha', team: 'Z' }],
+  });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /Z/);
+});
+
+test('validateShape rejects a match played by a team that is not defined', () => {
+  const r = validateShape({
+    ...withTeams,
+    matches: [{ id: 'm1', label: 'A vs Z', date: '2026-08-17', teams: ['A', 'Z'], results: [] }],
+  });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /Z/);
+});
+
+test('validateShape still accepts a roster with no teams section', () => {
+  assert.deepEqual(validateShape(valid), { ok: true });
+});
+
+test('teamsById maps every team id to its name', () => {
+  const lookup = teamsById(withTeams);
+  assert.equal(lookup.get('A').name, 'Confirm Win');
+  assert.equal(lookup.get('C').name, '养MVP队');
+  assert.equal(lookup.size, 3);
+});
+
+test('computeTeamTable shows the team name and keeps the id for the badge', () => {
+  const rows = computeTeamTable(withTeams);
+  const top = rows.find((r) => r.teamId === 'A');
+  assert.equal(top.team, 'Confirm Win');
+  assert.equal(top.won, 1);
+});
+
+test('computeTeamTable lists a defined team that has not played yet', () => {
+  const rows = computeTeamTable(withTeams);
+  const idle = rows.find((r) => r.teamId === 'C');
+  assert.equal(idle.team, '养MVP队');
+  assert.equal(idle.played, 0);
+});
+
+test('computeTeamTable falls back to the id when a team has no definition', () => {
+  const undefined_teams = {
+    players: [{ id: 'p1', ign: 'Alpha', team: 'Team A' }],
+    matches: [],
+  };
+  const rows = computeTeamTable(undefined_teams);
+  assert.equal(rows.find((r) => r.teamId === 'Team A').team, 'Team A');
+});
+
+test('computeStandings shows the team name, not the id', () => {
+  const rows = computeStandings(withTeams);
+  assert.equal(rows.find((r) => r.playerId === 'p1').team, 'Confirm Win');
+});
+
+test('computeStandings leaves a player with no team on null', () => {
+  const rows = computeStandings(valid);
+  assert.equal(rows[0].team, null);
+});
+
+test('formatTeamLabel writes the id and the name together', () => {
+  assert.equal(formatTeamLabel('B', 'GG Bro'), 'Team B - GG Bro');
+});
+
+test('formatTeamLabel handles a team with no player', () => {
+  assert.equal(formatTeamLabel(null, null), null);
+});
+
+test('formatTeamLabel drops the dash when the team has no name of its own', () => {
+  assert.equal(formatTeamLabel('B', 'B'), 'Team B');
+});
+
+test('leaderSummary carries the team id so the board can label it', () => {
+  const summary = leaderSummary(computeStandings(withTeams));
+  assert.equal(summary.teamId, 'A');
+  assert.equal(summary.team, 'Confirm Win');
 });

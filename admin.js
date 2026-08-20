@@ -41,6 +41,37 @@ function matchesUsingPlayer(playerId) {
   return draft.matches.filter((m) => m.results.some((r) => r.playerId === playerId));
 }
 
+/**
+ * A picker over the teams declared in data.json. The team used to be typed by
+ * hand, which let a typo quietly invent a sixth team that then sat on the
+ * standings table with nobody in it.
+ */
+function teamSelect(selected, label) {
+  const select = el('select', 'ad-input ad-team');
+  select.setAttribute('aria-label', label);
+
+  const none = el('option', null, 'No team');
+  none.value = '';
+  select.append(none);
+
+  for (const team of draft.teams ?? []) {
+    const option = el('option', null, `${team.id} — ${team.name}`);
+    option.value = team.id;
+    select.append(option);
+  }
+
+  // A player on a team that is no longer declared keeps their value rather
+  // than silently snapping to "No team".
+  if (selected && !(draft.teams ?? []).some((t) => t.id === selected)) {
+    const orphan = el('option', null, `${selected} (not defined)`);
+    orphan.value = selected;
+    select.append(orphan);
+  }
+
+  select.value = selected ?? '';
+  return select;
+}
+
 function addPlayer(rawIgn, rawTeam) {
   const ign = rawIgn.trim();
   if (ign === '') return 'Enter an in-game name.';
@@ -101,14 +132,10 @@ function renderRoster() {
     });
     li.append(input);
 
-    const team = el('input', 'ad-input ad-team');
-    team.value = player.team ?? '';
-    team.placeholder = 'Team';
-    team.setAttribute('aria-label', `Team for ${player.ign}`);
+    const team = teamSelect(player.team, `Team for ${player.ign}`);
     team.addEventListener('change', () => {
-      const value = team.value.trim();
-      if (value === '') delete player.team;
-      else player.team = value;
+      if (team.value === '') delete player.team;
+      else player.team = team.value;
       refreshOutput();
     });
     li.append(team);
@@ -129,9 +156,7 @@ function renderRoster() {
   const field = el('input', 'ad-input');
   field.placeholder = 'New player IGN';
   field.setAttribute('aria-label', 'New player IGN');
-  const teamField = el('input', 'ad-input ad-team');
-  teamField.placeholder = 'Team';
-  teamField.setAttribute('aria-label', 'Team for the new player');
+  const teamField = teamSelect('', 'Team for the new player');
   const add = el('button', 'ad-btn', 'Add player');
   add.type = 'button';
   const submit = () => {

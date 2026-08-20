@@ -67,3 +67,20 @@ test('formatDay renders a readable day', () => {
 test('formatDay passes through anything that is not YYYY-MM-DD', () => {
   assert.equal(formatDay('sometime'), 'sometime');
 });
+
+test('validateScreenshots accepts a shot labelled by its teams', () => {
+  assert.deepEqual(
+    validateScreenshots({
+      screenshots: [{ file: 'screenshots/AvB_17-8.jpg', date: '2026-08-17', teams: ['A', 'B'] }],
+    }),
+    { ok: true },
+  );
+});
+
+test('validateScreenshots rejects teams that are not a pair', () => {
+  const r = validateScreenshots({
+    screenshots: [{ file: 'a.png', date: '2026-08-17', teams: ['A'] }],
+  });
+  assert.equal(r.ok, false);
+  assert.match(r.error, /two/);
+});
